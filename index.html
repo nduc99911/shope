@@ -124,6 +124,12 @@
                             <section class="card pricing-section">
                                 <div class="card-header">
                                     <div class="header-left"><i data-lucide="settings-2" id="platform-icon"></i> <h2 id="platform-title">Cấu hình Shopee</h2></div>
+                                    <select id="fee-template-select" class="template-select">
+                                        <option value="custom">-- Mẫu Phí --</option>
+                                        <option value="shopee-mall">Shopee Mall</option>
+                                        <option value="shopee-fav">Shop Yêu Thích / Thường</option>
+                                        <option value="tiktok-standard">TikTok Shop Chuẩn</option>
+                                    </select>
                                 </div>
                                 <div class="shopee-config-grid">
                                     <div class="input-group"><label>Lợi nhuận (%)</label><input type="number" id="target-profit" value="20"></div>
@@ -178,28 +184,34 @@
         </main>
     </div>
 
-    <!-- Row Template -->
     <template id="product-row-template">
         <tr class="product-row">
-            <td class="col-img">
+            <td class="col-img" data-label="Ảnh">
                 <div class="img-preview">
                     <i data-lucide="camera" style="width: 14px;"></i>
                     <input type="text" class="p-img-url">
                 </div>
             </td>
-            <td>
+            <td data-label="Sản phẩm">
                 <input type="text" class="p-name" placeholder="Tên sp...">
                 <div class="input-inline">
                     <input type="number" class="p-price" placeholder="Giá ¥">
                     <input type="number" class="p-qty" value="1" placeholder="SL">
                 </div>
             </td>
-            <td><span class="p-landed-cost">0đ</span></td>
-            <td><span class="p-shopee-price">0đ</span></td>
-            <td><input type="number" class="p-comp-price" style="width: 70px !important;"></td>
-            <td><input type="number" class="p-fs-rate" placeholder="%" style="width: 50px !important;"></td>
-            <td><input type="number" class="p-actual-price" style="width: 80px !important; border: 1.5px solid var(--primary-color) !important;"></td>
-            <td><span class="p-real-profit">0đ</span></td>
+            <td data-label="Vốn về tay"><span class="p-landed-cost">0đ</span></td>
+            <td data-label="Giá gợi ý sàn"><span class="p-shopee-price">0đ</span></td>
+            <td data-label="Giá đối thủ"><input type="number" class="p-comp-price" style="width: 70px !important;"></td>
+            <td data-label="Flash Sale"><input type="number" class="p-fs-rate" placeholder="%" style="width: 50px !important;"></td>
+            <td data-label="Giá bạn bán"><input type="number" class="p-actual-price" style="width: 80px !important; border: 1.5px solid var(--primary-color) !important;"></td>
+            <td data-label="Lợi nhuận">
+                <div class="cost-stack">
+                    <span class="p-real-profit">0đ</span>
+                    <div class="profit-visual-container">
+                        <div class="profit-bar"></div>
+                    </div>
+                </div>
+            </td>
             <td><button class="remove-btn"><i data-lucide="trash-2" style="width: 16px;"></i></button></td>
         </tr>
     </template>

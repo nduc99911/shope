@@ -599,5 +599,115 @@ td {
     border: 1.5px solid rgba(238, 77, 45, 0.3);
 }
 
-.total-row span:first-child { font-weight: 700; color: var(--primary-color); }
-.total-row .highlight { font-size: 1.5rem; }
+.template-select {
+    background: rgba(var(--primary-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+    color: var(--primary-color);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Profit Visual Bar */
+.profit-visual-container {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-top: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.profit-bar {
+    height: 100%;
+    width: 0%;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: var(--danger-color);
+}
+
+.profit-bar.safe { background: var(--success-color); }
+.profit-bar.warning { background: #f59e0b; }
+
+/* Mobile Enhancements */
+@media (max-width: 768px) {
+    .app-container { padding: 1rem; }
+    
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .exchange-rate-badge {
+        grid-column: span 2;
+        justify-content: center;
+    }
+
+    .tab-navigation {
+        width: 100%;
+        overflow-x: auto;
+        padding: 4px;
+    }
+
+    .tab-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .platform-switch { width: 100%; justify-content: center; }
+    
+    /* Table to Cards on mobile */
+    .product-table-wrapper { border: none; }
+    
+    #product-table thead { display: none; }
+    #product-table tr {
+        display: block;
+        background: rgba(255, 255, 255, 0.03);
+        margin-bottom: 1rem;
+        border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+    }
+
+    #product-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    #product-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+    }
+
+    .col-img { position: absolute; right: 1rem; top: 1rem; border: none !important; }
+    .remove-btn { position: absolute; right: 1rem; bottom: 1rem; }
+}
+
+.exchange-rate-badge i.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
