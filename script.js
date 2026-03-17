@@ -272,27 +272,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addProductBtn.onclick = () => addProductRow();
     addComboBtn.onclick = () => addCombo();
-    configInputs.forEach(id => document.getElementById(id).addEventListener('input', () => { calculate(); saveState(); }));
+    configInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', () => { calculate(); saveState(); });
+    });
 
-    document.getElementById('export-excel-btn').onclick = () => {
-        const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Sàn', 'Giá Bán', 'Lãi/SP']];
-        document.querySelectorAll('.product-row').forEach((r, i) => data.push([i+1, r.querySelector('.p-name').value, r.querySelector('.p-price').value, r.querySelector('.p-qty').value, r.querySelector('.p-landed-cost').textContent, r.querySelector('.p-shopee-price').textContent, r.querySelector('.p-actual-price').value, r.querySelector('.p-real-profit').textContent]));
-        XLSX.writeFile(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), XLSX.utils.aoa_to_sheet(data), "Order"), `OrderPlus_Export.xlsx`);
-    };
-
+    // --- EXCEL HANDLERS ---
     const importInput = document.getElementById('import-excel-input');
-    document.getElementById('import-excel-btn').onclick = () => importInput.click();
-    importInput.onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const json = XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, { type: 'binary' }).Sheets[XLSX.read(evt.target.result, { type: 'binary' }).SheetNames[0]]);
-            productList.innerHTML = '';
-            json.forEach(row => addProductRow({ name: `${row['TÊN SẢN PHẨM']||''} (${row['THUỘC TÍNH']||''})`.trim(), price: parseFloat(row['GIÁ TỆ'])||0, qty: parseInt(row['SỐ LƯỢNG'])||0 }));
-            if (json[0]?.['TỈ GIÁ']) document.getElementById('exchange-rate').value = json[0]['TỈ GIÁ'];
-            calculate(); saveState();
+    const importBtn = document.getElementById('import-excel-btn');
+    const exportBtn = document.getElementById('export-excel-btn');
+
+    if (exportBtn) {
+        exportBtn.onclick = () => {
+            console.log("Exporting to Excel...");
+            const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Sàn', 'Giá Bạn Bán', 'Lãi/SP']];
+            document.querySelectorAll('.product-row').forEach((r, i) => {
+                data.push([
+                    i + 1,
+                    r.querySelector('.p-name').value,
+                    r.querySelector('.p-price').value,
+                    r.querySelector('.p-qty').value,
+                    r.querySelector('.p-landed-cost').textContent,
+                    r.querySelector('.p-shopee-price').textContent,
+                    r.querySelector('.p-actual-price').value,
+                    r.querySelector('.p-real-profit').textContent
+                ]);
+            });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Order");
+            XLSX.writeFile(wb, `OrderPlus_Export_${new Date().getTime()}.xlsx`);
         };
-        reader.readAsBinaryString(e.target.files[0]);
-    };
+    }
+
+    if (importBtn && importInput) {
+        importBtn.onclick = () => {
+            console.log("Import button clicked, triggering file input...");
+            importInput.click();
+        };
+
+        importInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            console.log("File selected:", file.name);
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const workbook = XLSX.read(evt.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    
+                    if (json.length > 0) {
+                        productList.innerHTML = '';
+                        json.forEach(row => {
+                            addProductRow({
+                                name: `${row['TÊN SẢN PHẨM'] || ''} (${row['THUỘC TÍNH'] || ''})`.trim(),
+                                price: parseFloat(row['GIÁ TỆ']) || 0,
+                                qty: parseInt(row['SỐ LƯỢNG']) || 0
+                            });
+                        });
+                        if (json[0]?.['TỈ GIÁ']) {
+                            document.getElementById('exchange-rate').value = json[0]['TỈ GIÁ'];
+                        }
+                        calculate();
+                        saveState();
+                        alert(`Đã nhập thành công ${json.length} sản phẩm!`);
+                    }
+                } catch (err) {
+                    console.error("Error reading Excel:", err);
+                    alert("Có lỗi khi đọc file Excel. Vui lòng kiểm tra định dạng.");
+                }
+            };
+            reader.readAsBinaryString(file);
+            importInput.value = ''; // Reset for next selection
+        };
+    }
 
     const saveState = () => {
         const state = { platform: currentPlatform, tab: document.querySelector('.tab-btn.active').dataset.tab, config: {}, items: [], combos: [] };
