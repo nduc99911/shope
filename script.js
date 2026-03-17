@@ -1,9 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Lucide icons
     const refreshIcons = () => lucide.createIcons();
     refreshIcons();
 
-    // Elements
     const productList = document.getElementById('product-list');
     const addProductBtn = document.getElementById('add-product-btn');
     const rowTemplate = document.getElementById('product-row-template');
@@ -12,12 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const comboCardTemplate = document.getElementById('combo-card-template');
     const comboItemTemplate = document.getElementById('combo-item-template');
     
-    // Config IDs
+    let currentPlatform = 'shopee';
+
     const configInputs = [
         'exchange-rate', 'cn-shipping', 'weight', 'dim-l', 'dim-w', 'dim-h', 
         'destination', 'check-goods', 'wood-pack',
         'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 'shopee-ads-fee', 
-        'shopee-vxtra-fee', 'shopee-fxtra-fee', 'shopee-tax-fee',
+        'shopee-vxtra-fee', 'shopee-fxtra-fee', 'shopee-tax-fee', 'shopee-mkt-fee',
         'shopee-piship', 'shopee-infra', 'shopee-pack-rate', 'shopee-staff-rate', 'shopee-svoucher-rate'
     ];
 
@@ -37,18 +36,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getRate = () => parseFloat(document.getElementById('exchange-rate').value) || 0;
 
+    // --- PLATFORM SWITCH ---
+    document.querySelectorAll('.switch-option').forEach(opt => {
+        opt.onclick = () => {
+            document.querySelectorAll('.switch-option').forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            currentPlatform = opt.dataset.platform;
+            
+            const title = document.getElementById('platform-title');
+            const icon = document.getElementById('platform-icon');
+            if (currentPlatform === 'tiktok') {
+                title.textContent = 'Cấu hình TikTok Shop';
+                icon.dataset.lucide = 'music-2';
+                icon.style.color = '#00f2ea';
+                // Adjust default fees for TikTok if needed
+                document.getElementById('shopee-pay-fee').value = 2.5; // TikTok Transaction Fee
+                document.getElementById('shopee-fixed-fee').value = 4.0; // TikTok Commission
+            } else {
+                title.textContent = 'Cấu hình Shopee';
+                icon.dataset.lucide = 'shopping-bag';
+                icon.style.color = '#ee4d2d';
+                document.getElementById('shopee-pay-fee').value = 4.91;
+                document.getElementById('shopee-fixed-fee').value = 10;
+            }
+            refreshIcons();
+            calculate();
+            saveState();
+        };
+    });
+
     const addProductRow = (data = null) => {
         const clone = rowTemplate.content.cloneNode(true);
         const row = clone.querySelector('.product-row');
-        
         if (data) {
             row.querySelector('.p-name').value = data.name || '';
             row.querySelector('.p-price').value = data.price || '';
             row.querySelector('.p-qty').value = data.qty || 1;
             row.querySelector('.p-img-url').value = data.img || '';
             row.querySelector('.p-actual-price').value = data.actualPrice || '';
+            row.querySelector('.p-comp-price').value = data.compPrice || '';
+            row.querySelector('.p-fs-rate').value = data.fsRate || 0;
         }
-
         productList.appendChild(clone);
         refreshIcons();
         attachRowListeners(productList.lastElementChild);
@@ -77,14 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = clone.querySelector('.combo-card');
         comboList.appendChild(card);
         const currentCard = comboList.lastElementChild;
-
         if (data) {
             currentCard.querySelector('.combo-name').value = data.name || '';
             data.items.forEach(item => addComboItem(currentCard, item));
         } else {
             addComboItem(currentCard);
         }
-
         currentCard.querySelector('.add-item-to-combo-btn').onclick = () => addComboItem(currentCard);
         currentCard.querySelector('.remove-combo-btn').onclick = () => {
             currentCard.remove();
@@ -92,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
             saveState();
         };
         currentCard.querySelector('.combo-name').addEventListener('input', saveState);
-        
         refreshIcons();
         calculate();
     };
@@ -103,15 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = clone.querySelector('.combo-item');
         itemsList.appendChild(item);
         const currentItem = itemsList.lastElementChild;
-
         const select = currentItem.querySelector('.combo-product-select');
         populateSelect(select);
-
         if (data) {
             select.value = data.productId;
             currentItem.querySelector('.combo-qty').value = data.qty;
         }
-
         select.onchange = () => { calculate(); saveState(); };
         currentItem.querySelector('.combo-qty').oninput = () => { calculate(); saveState(); };
         currentItem.querySelector('.remove-item-btn').onclick = () => {
@@ -119,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             calculate();
             saveState();
         };
-        
         refreshIcons();
     };
 
@@ -151,8 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCheck = document.getElementById('check-goods').checked;
         const isWood = document.getElementById('wood-pack').checked;
 
-        // Shopee Configs
+        // Platform Configs
         const tProfit = (parseFloat(document.getElementById('target-profit').value) || 0) / 100;
+        const mktFee = (parseFloat(document.getElementById('shopee-mkt-fee').value) || 0) / 100;
         const sFixed = (parseFloat(document.getElementById('shopee-fixed-fee').value) || 0) / 100;
         const sPay = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
         const sAds = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
@@ -162,13 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const sStaff = (parseFloat(document.getElementById('shopee-staff-rate').value) || 0) / 100;
         const sVoucher = (parseFloat(document.getElementById('shopee-svoucher-rate').value) || 0) / 100;
         const sPack = (parseFloat(document.getElementById('shopee-pack-rate').value) || 0) / 100;
-        
         const piShip = parseFloat(document.getElementById('shopee-piship').value) || 0;
         const infra = parseFloat(document.getElementById('shopee-infra').value) || 0;
         const flatFeesUnit = (piShip + infra);
-
-        const V_CAP = 50000;
-        const F_CAP = 40000;
 
         const rows = document.querySelectorAll('.product-row');
         let totalMerchCNY = 0;
@@ -178,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const price = parseFloat(row.querySelector('.p-price').value) || 0;
             const qty = parseInt(row.querySelector('.p-qty').value) || 0;
             const actualSell = parseFloat(row.querySelector('.p-actual-price').value) || 0;
+            const compPrice = parseFloat(row.querySelector('.p-comp-price').value) || 0;
+            const fsRate = (parseFloat(row.querySelector('.p-fs-rate').value) || 0) / 100;
             const imgInput = row.querySelector('.p-img-url');
             const imgContainer = row.querySelector('.img-preview');
             
@@ -193,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             totalMerchCNY += (price * qty);
             totalQty += qty;
             return { 
-                price, qty, actualSell,
+                price, qty, actualSell, compPrice, fsRate,
                 landedEl: row.querySelector('.p-landed-cost'), 
                 shopeeEl: row.querySelector('.p-shopee-price'),
                 realProfitEl: row.querySelector('.p-real-profit')
@@ -201,71 +221,63 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const totalProductVND = totalMerchCNY * rate;
-        
-        let serviceRate = 0.03;
-        if (totalProductVND > 100000000) serviceRate = 0.01;
-        else if (totalProductVND > 30000000) serviceRate = 0.02;
-        else if (totalProductVND > 3000000) serviceRate = 0.025;
+        let serviceRate = (totalProductVND > 100000000) ? 0.01 : (totalProductVND > 30000000) ? 0.02 : (totalProductVND > 3000000) ? 0.025 : 0.03;
         let serviceFee = totalProductVND > 0 ? Math.max(5000, totalProductVND * serviceRate) : 0;
-
         const volW = (L * W * H) / 6000;
         const chargeW = Math.max(weight, volW, rows.length > 0 ? 0.3 : 0);
         let sRate = (dest === 'hanoi') ? (chargeW >= 500 ? 22000 : chargeW >= 50 ? 23000 : 24000) : (chargeW >= 500 ? 28000 : chargeW >= 50 ? 29000 : 30000);
         const shippingFee = chargeW * sRate;
-
-        let checkFee = 0;
-        if (isCheck) checkFee = totalQty <= 2 ? 5000 : totalQty <= 10 ? 3000 : 2000;
-        results.itemCheck.classList.toggle('hidden', !isCheck);
-
-        let woodFee = 0;
-        if (isWood) woodFee = (20 + Math.max(0, chargeW - 1)) * rate;
-        results.itemWood.classList.toggle('hidden', !isWood);
-
+        let checkFee = isCheck ? (totalQty <= 2 ? 5000 : totalQty <= 10 ? 3000 : 2000) : 0;
+        let woodFee = isWood ? (20 + Math.max(0, chargeW - 1)) * rate : 0;
         const totalFees = serviceFee + shippingFee + checkFee + woodFee + (cnShipY * rate);
         const totalOrderVND = totalProductVND + totalFees;
         cachedFeeMult = totalProductVND > 0 ? (totalFees / totalProductVND) : 0;
 
         const fmt = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(v));
-        let totalRealProfit = 0;
+        let totalNetProfit = 0;
         let totalRevenue = 0;
 
         productData.forEach(p => {
             const unitLanded = (p.price * rate) * (1 + cachedFeeMult);
             p.landedEl.textContent = p.price > 0 ? fmt(unitLanded) : '0đ';
 
-            // Shopee price (Iterative for caps)
-            let spSuggested = unitLanded / 0.7;
-            const otherRates = sFixed + sPay + sAds + sTax + sStaff + sVoucher + sPack;
+            // Suggested Price Iteration
+            let spSuggested = unitLanded / 0.5;
+            const variableRates = sFixed + sPay + sAds + sTax + sStaff + sVoucher + sPack + mktFee;
             for (let i = 0; i < 5; i++) {
-                const vx = Math.min(spSuggested * sVxtra, V_CAP);
-                const fx = Math.min(spSuggested * sFxtra, F_CAP);
+                const vx = Math.min(spSuggested * sVxtra, 50000);
+                const fx = Math.min(spSuggested * sFxtra, 40000);
                 const flat = totalQty > 0 ? (flatFeesUnit / totalQty) : 0;
-                const div = 1 - (otherRates + tProfit);
+                const div = 1 - (variableRates + tProfit);
                 if (div > 0) spSuggested = (unitLanded + flat + vx + fx) / div;
             }
 
             if (p.price > 0) {
                 p.shopeeEl.textContent = fmt(spSuggested);
                 
-                // Real Profit Calc if Actual Price is entered
-                if (p.actualSell > 0) {
-                    const vx = Math.min(p.actualSell * sVxtra, V_CAP);
-                    const fx = Math.min(p.actualSell * sFxtra, F_CAP);
-                    const flat = totalQty > 0 ? (flatFeesUnit / totalQty) : 0;
-                    const variableCosts = p.actualSell * otherRates;
-                    const realProfit = p.actualSell - (unitLanded + flat + vx + fx + variableCosts);
-                    
-                    p.realProfitEl.textContent = fmt(realProfit);
-                    p.realProfitEl.classList.toggle('pos', realProfit > 0);
-                    p.realProfitEl.classList.toggle('neg', realProfit < 0);
-                    totalRealProfit += (realProfit * p.qty);
-                    totalRevenue += (p.actualSell * p.qty);
-                } else {
-                    p.realProfitEl.textContent = '---';
-                    p.realProfitEl.className = 'p-real-profit';
-                    totalRevenue += (spSuggested * p.qty);
-                    totalRealProfit += (spSuggested * tProfit * p.qty); // fallback to target profit if no actual sell price
+                // Real Profit Calculation (Handling Flash Sale & Mkt Ads)
+                let sellPrice = p.actualSell || spSuggested;
+                
+                // If competitor price is set and higher than landed, you might want to match it
+                // Logic: real profit based on actualSell, applying FS discount
+                const effectiveSell = sellPrice * (1 - p.fsRate);
+                const vx = Math.min(effectiveSell * sVxtra, 50000);
+                const fx = Math.min(effectiveSell * sFxtra, 40000);
+                const flat = totalQty > 0 ? (flatFeesUnit / totalQty) : 0;
+                const costs = effectiveSell * variableRates;
+                const netProfit = effectiveSell - (unitLanded + flat + vx + fx + costs);
+                
+                p.realProfitEl.textContent = fmt(netProfit);
+                p.realProfitEl.className = 'p-real-profit ' + (netProfit > 0 ? 'pos' : 'neg');
+                
+                // Competitor Analysis Micro-feedback
+                if (p.compPrice > 0) {
+                    const diff = effectiveSell - p.compPrice;
+                    p.realProfitEl.title = `Rẻ hơn đối thủ: ${fmt(Math.abs(diff))}`;
                 }
+
+                totalNetProfit += (netProfit * p.qty);
+                totalRevenue += (effectiveSell * p.qty);
             } else p.shopeeEl.textContent = '---';
         });
 
@@ -276,23 +288,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pIdx = item.querySelector('.combo-product-select').value;
                 const q = parseInt(item.querySelector('.combo-qty').value) || 0;
                 if (pIdx !== "" && productData[pIdx]) {
-                    const unitLanded = (productData[pIdx].price * rate) * (1 + cachedFeeMult);
-                    comboLanded += unitLanded * q;
+                    comboLanded += (productData[pIdx].price * rate * (1 + cachedFeeMult)) * q;
                 }
             });
             card.querySelector('.c-total-landed').textContent = fmt(comboLanded);
+            const variableRates = sFixed + sPay + sAds + sTax + sStaff + sVoucher + sPack + mktFee;
             let sp = comboLanded / 0.7;
-            const otherRates = sFixed + sPay + sAds + sTax + sStaff + sVoucher + sPack;
             for (let i = 0; i < 5; i++) {
-                const vx = Math.min(sp * sVxtra, V_CAP);
-                const fx = Math.min(sp * sFxtra, F_CAP);
+                const vx = Math.min(sp * sVxtra, 50000);
+                const fx = Math.min(sp * sFxtra, 40000);
                 const flat = totalQty > 0 ? (flatFeesUnit / totalQty) : 0;
-                const div = 1 - (otherRates + tProfit);
+                const div = 1 - (variableRates + tProfit);
                 if (div > 0) sp = (comboLanded + flat + vx + fx) / div;
             }
             card.querySelector('.c-shopee-price').textContent = comboLanded > 0 ? fmt(sp) : '0đ';
         });
 
+        results.itemCheck.classList.toggle('hidden', !isCheck);
+        results.itemWood.classList.toggle('hidden', !isWood);
         results.productPrice.textContent = fmt(totalProductVND);
         results.serviceFee.textContent = fmt(serviceFee);
         results.intlShipping.textContent = fmt(shippingFee);
@@ -303,31 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('stat-total-capital').textContent = fmt(totalOrderVND);
         document.getElementById('stat-total-revenue').textContent = fmt(totalRevenue);
-        document.getElementById('stat-total-profit').textContent = fmt(totalRealProfit);
-        document.getElementById('stat-roi').textContent = Math.round(totalOrderVND > 0 ? (totalRealProfit/totalOrderVND*100) : 0) + '%';
+        document.getElementById('stat-total-profit').textContent = fmt(totalNetProfit);
+        document.getElementById('stat-roi').textContent = Math.round(totalOrderVND > 0 ? (totalNetProfit/totalOrderVND*100) : 0) + '%';
     };
 
-    // Global Listeners
     addProductBtn.onclick = () => addProductRow();
     addComboBtn.onclick = () => addCombo();
-    configInputs.forEach(id => {
-        document.getElementById(id).addEventListener('input', () => { calculate(); saveState(); });
-    });
+    configInputs.forEach(id => document.getElementById(id).addEventListener('input', () => { calculate(); saveState(); }));
 
-    // Excel Export
     document.getElementById('export-excel-btn').onclick = () => {
-        const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Shopee', 'Giá Bán Thực', 'Lợi Nhuận Thực']];
+        const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Sàn', 'Giá Bạn Bán', 'Lợi Nhuận Thực']];
         document.querySelectorAll('.product-row').forEach((r, i) => {
-            data.push([
-                i+1, 
-                r.querySelector('.p-name').value, 
-                r.querySelector('.p-price').value, 
-                r.querySelector('.p-qty').value, 
-                r.querySelector('.p-landed-cost').textContent, 
-                r.querySelector('.p-shopee-price').textContent,
-                r.querySelector('.p-actual-price').value,
-                r.querySelector('.p-real-profit').textContent
-            ]);
+            data.push([i+1, r.querySelector('.p-name').value, r.querySelector('.p-price').value, r.querySelector('.p-qty').value, r.querySelector('.p-landed-cost').textContent, r.querySelector('.p-shopee-price').textContent, r.querySelector('.p-actual-price').value, r.querySelector('.p-real-profit').textContent]);
         });
         const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -335,7 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
         XLSX.writeFile(wb, `OrderPlus_${new Date().getTime()}.xlsx`);
     };
 
-    // Excel Import
     const importInput = document.getElementById('import-excel-input');
     document.getElementById('import-excel-btn').onclick = () => importInput.click();
     importInput.onchange = (e) => {
@@ -363,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const saveState = () => {
-        const state = { config: {}, items: [], combos: [] };
+        const state = { platform: currentPlatform, config: {}, items: [], combos: [] };
         configInputs.forEach(id => {
             const el = document.getElementById(id);
             state.config[id] = el.type === 'checkbox' ? el.checked : el.value;
@@ -374,7 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 price: r.querySelector('.p-price').value, 
                 qty: r.querySelector('.p-qty').value, 
                 img: r.querySelector('.p-img-url').value,
-                actualPrice: r.querySelector('.p-actual-price').value
+                actualPrice: r.querySelector('.p-actual-price').value,
+                compPrice: r.querySelector('.p-comp-price').value,
+                fsRate: r.querySelector('.p-fs-rate').value
             });
         });
         document.querySelectorAll('.combo-card').forEach(card => {
@@ -384,13 +385,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             state.combos.push(combo);
         });
-        localStorage.setItem('shope_calc_v5', JSON.stringify(state));
+        localStorage.setItem('shope_calc_v6', JSON.stringify(state));
     };
 
     const loadState = () => {
-        const saved = localStorage.getItem('shope_calc_v5');
+        const saved = localStorage.getItem('shope_calc_v6');
         if (!saved) { addProductRow(); return; }
         const state = JSON.parse(saved);
+        if (state.platform) {
+            currentPlatform = state.platform;
+            document.querySelectorAll('.switch-option').forEach(o => {
+                o.classList.toggle('active', o.dataset.platform === currentPlatform);
+            });
+            const title = document.getElementById('platform-title');
+            if (currentPlatform === 'tiktok') title.textContent = 'Cấu hình TikTok Shop';
+        }
         configInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el && state.config[id] !== undefined) {

@@ -242,6 +242,49 @@ th {
     overflow: hidden;
 }
 
+/* Platform Switch */
+.platform-switch {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.switch-option {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+}
+
+.switch-option.active {
+    background: var(--accent-color);
+    color: white;
+}
+
+.switch-option[data-platform="tiktok"].active {
+    background: #000000;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.p-comp-price, .p-fs-rate, .p-actual-price {
+    width: 100% !important;
+    min-width: 80px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .img-preview i { width: 16px; color: var(--text-secondary); }
 .img-preview input {
     position: absolute;
