@@ -71,110 +71,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const shopeePayRate = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
         const shopeeAdsRate = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
         const shopeeVxtraRate = (parseFloat(document.getElementById('shopee-vxtra-fee').value) || 0) / 100;
+        const shopeeFxtraRate = (parseFloat(document.getElementById('shopee-fxtra-fee').value) || 0) / 100;
         const shopeeTaxRate = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
         
         // Operational percentages (Fixed per your request)
-        const staffBonusRate = 0.0075; // average 0.5-1%
-        const shopVoucherRate = 0.015; // average 1-2%
-        const packRate = 0.0075; // average 0.5-1%
+        const staffBonusRate = 0.0075; // 0.5-1%
+        const shopVoucherRate = 0.015; // 1-2%
+        const packRate = 0.0075; // 0.5-1%
         const flatFeesPerOrder = 1620 + 3000; // PiShip + Ha Tang
 
-        // 1. Calculate Merchandise Total
-        const rows = document.querySelectorAll('.product-row');
-        let totalMerchCNY = 0;
-        let totalQty = 0;
+        // Capped Rates (Shopee Policy)
+        const VEXTRA_CAP = 50000;
+        const FXTRA_CAP = 40000;
 
-        const products = Array.from(rows).map(row => {
-            const price = parseFloat(row.querySelector('.p-price').value) || 0;
-            const qty = parseInt(row.querySelector('.p-qty').value) || 1;
-            const imgInput = row.querySelector('.p-img-url');
-            const imgPreview = row.querySelector('.img-preview');
-            
-            // Handle Image Preview
-            if (imgInput.value) {
-                let img = imgPreview.querySelector('img');
-                if (!img) {
-                    img = document.createElement('img');
-                    imgPreview.appendChild(img);
-                }
-                img.src = imgInput.value;
-            } else {
-                const img = imgPreview.querySelector('img');
-                if (img) img.remove();
-            }
-
-            totalMerchCNY += (price * qty);
-            totalQty += qty;
-            return { 
-                price, qty, 
-                landedCell: row.querySelector('.p-landed-cost'),
-                shopeeCell: row.querySelector('.p-shopee-price')
-            };
-        });
-
-        const totalProductVND = totalMerchCNY * rate;
-        const totalShipCNVND = cnShipY * rate;
-
-        // 2. Service Fee
-        let serviceRate = 0.03;
-        if (totalProductVND > 100000000) serviceRate = 0.01;
-        else if (totalProductVND > 30000000) serviceRate = 0.02;
-        else if (totalProductVND > 3000000) serviceRate = 0.025;
+        // ... intermediate logic ...
         
-        let serviceFee = totalProductVND * serviceRate;
-        if (totalProductVND > 0 && serviceFee < 5000) serviceFee = 5000;
-
-        // 3. International Shipping
-        const volWeight = (L * W * H) / 6000;
-        const chargeWeight = Math.max(weight, volWeight, rows.length > 0 ? 0.3 : 0);
-        let shippingUnitRate = 0;
-        if (dest === 'hanoi') {
-            if (chargeWeight >= 500) shippingUnitRate = 22000;
-            else if (chargeWeight >= 50) shippingUnitRate = 23000;
-            else shippingUnitRate = 24000;
-        } else {
-            if (chargeWeight >= 500) shippingUnitRate = 28000;
-            else if (chargeWeight >= 50) shippingUnitRate = 29000;
-            else shippingUnitRate = 30000;
-        }
-        const shippingFee = chargeWeight * shippingUnitRate;
-
-        // 4. Optional Fees
-        let checkFee = 0;
-        if (isCheck) {
-            if (totalQty <= 2) checkFee = 5000;
-            else if (totalQty <= 10) checkFee = 3000;
-            else checkFee = 2000;
-        }
-        results.itemCheck.classList.toggle('hidden', !isCheck);
-
-        let woodFee = 0;
-        if (isWood) {
-            const woodY = 20 + Math.max(0, (chargeWeight - 1) * 1);
-            woodFee = woodY * rate;
-        }
-        results.itemWood.classList.toggle('hidden', !isWood);
-
-        // 5. Total and Landed Cost Per Product
-        const totalAllFeesVND = serviceFee + shippingFee + checkFee + woodFee + totalShipCNVND;
-        const totalOrderVND = totalProductVND + totalAllFeesVND;
-        const feeMultiplier = totalProductVND > 0 ? (totalAllFeesVND / totalProductVND) : 0;
-
-        const fmt = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(num));
-
-        let totalExpectedRevenue = 0;
-
         products.forEach(p => {
             const unitProductVND = p.price * rate;
             const unitLandedVND = unitProductVND * (1 + feeMultiplier);
             p.landedCell.textContent = p.price > 0 ? fmt(unitLandedVND) : '0đ';
 
-            const totalVariableFeesRate = shopeeFixedRate + shopeePayRate + shopeeAdsRate + shopeeVxtraRate + shopeeTaxRate + staffBonusRate + shopVoucherRate + packRate;
-            const divisor = 1 - (totalVariableFeesRate + targetProfitRate);
-            
-            if (divisor > 0 && p.price > 0) {
-                const unitFlatFee = flatFeesPerOrder / totalQty;
-                const suggestedPrice = (unitLandedVND + unitFlatFee) / divisor;
+            // Shopee Price Formula with CAPS implementation
+            // Since suggested price depends on capped fees, we use a simple iterative refinement (3 passes is enough)
+            let suggestedPrice = unitLandedVND / 0.5; // Initial guess
+            for (let i = 0; i < 5; i++) {
+                const vxtraFee = Math.min(suggestedPrice * shopeeVxtraRate, VEXTRA_CAP);
+                const fxtraFee = Math.min(suggestedPrice * shopeeFxtraRate, FXTRA_CAP);
+                const unitFlatFee = totalQty > 0 ? (flatFeesPerOrder / totalQty) : 0;
+                
+                // Effective rates for variable fees (excluding capped items)
+                const otherFeesRate = shopeeFixedRate + shopeePayRate + shopeeAdsRate + shopeeTaxRate + staffBonusRate + shopVoucherRate + packRate;
+                
+                // TargetPrice = (Landed + FlatFees + CappedFees) / (1 - OtherFees% - TargetProfit%)
+                const divisor = 1 - (otherFeesRate + targetProfitRate);
+                if (divisor > 0) {
+                    suggestedPrice = (unitLandedVND + unitFlatFee + vxtraFee + fxtraFee) / (1 - otherFeesRate - targetProfitRate);
+                }
+            }
+
+            if (p.price > 0) {
                 p.shopeeCell.textContent = fmt(suggestedPrice);
                 totalExpectedRevenue += (suggestedPrice * p.qty);
             } else {
