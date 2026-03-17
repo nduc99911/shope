@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addProductBtn = document.getElementById('add-product-btn');
     const rowTemplate = document.getElementById('product-row-template');
     
+    // Config IDs
     const configInputs = [
         'exchange-rate', 'cn-shipping', 'weight', 'dim-l', 'dim-w', 'dim-h', 
         'destination', 'check-goods', 'wood-pack',
@@ -28,32 +29,39 @@ document.addEventListener('DOMContentLoaded', () => {
         itemWood: document.getElementById('item-wood-pack')
     };
 
-    // State
     const getRate = () => parseFloat(document.getElementById('exchange-rate').value) || 0;
 
-    const addProductRow = () => {
+    const addProductRow = (data = null) => {
         const clone = rowTemplate.content.cloneNode(true);
+        const row = clone.querySelector('.product-row');
+        
+        if (data) {
+            row.querySelector('.p-name').value = data.name || '';
+            row.querySelector('.p-price').value = data.price || '';
+            row.querySelector('.p-qty').value = data.qty || 1;
+            row.querySelector('.p-img-url').value = data.img || '';
+        }
+
         productList.appendChild(clone);
         refreshIcons();
-        attachRowListeners();
+        attachRowListeners(productList.lastElementChild);
         calculate();
     };
 
-    const attachRowListeners = () => {
-        const rows = document.querySelectorAll('.product-row');
-        rows.forEach(row => {
-            const inputs = row.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.removeEventListener('input', calculate);
-                input.addEventListener('input', calculate);
-            });
-            const removeBtn = row.querySelector('.remove-btn');
-            removeBtn.removeEventListener('click', () => {});
-            removeBtn.onclick = () => {
-                row.remove();
+    const attachRowListeners = (row) => {
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
                 calculate();
-            };
+                saveState();
+            });
         });
+        const removeBtn = row.querySelector('.remove-btn');
+        removeBtn.onclick = () => {
+            row.remove();
+            calculate();
+            saveState();
+        };
     };
 
     const calculate = () => {
@@ -68,61 +76,99 @@ document.addEventListener('DOMContentLoaded', () => {
         const isWood = document.getElementById('wood-pack').checked;
 
         // Shopee Configs
-        const targetProfitRate = (parseFloat(document.getElementById('target-profit').value) || 0) / 100;
-        const shopeeFixedRate = (parseFloat(document.getElementById('shopee-fixed-fee').value) || 0) / 100;
-        const shopeePayRate = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
-        const shopeeAdsRate = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
-        const shopeeVxtraRate = (parseFloat(document.getElementById('shopee-vxtra-fee').value) || 0) / 100;
-        const shopeeFxtraRate = (parseFloat(document.getElementById('shopee-fxtra-fee').value) || 0) / 100;
-        const shopeeTaxRate = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
+        const tProfit = (parseFloat(document.getElementById('target-profit').value) || 0) / 100;
+        const sFixed = (parseFloat(document.getElementById('shopee-fixed-fee').value) || 0) / 100;
+        const sPay = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
+        const sAds = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
+        const sVxtra = (parseFloat(document.getElementById('shopee-vxtra-fee').value) || 0) / 100;
+        const sFxtra = (parseFloat(document.getElementById('shopee-fxtra-fee').value) || 0) / 100;
+        const sTax = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
+        const sStaff = (parseFloat(document.getElementById('shopee-staff-rate').value) || 0) / 100;
+        const sVoucher = (parseFloat(document.getElementById('shopee-svoucher-rate').value) || 0) / 100;
+        const sPack = (parseFloat(document.getElementById('shopee-pack-rate').value) || 0) / 100;
         
-        // Operational percentages (Now adjustable from UI)
-        const staffBonusRate = (parseFloat(document.getElementById('shopee-staff-rate').value) || 0) / 100;
-        const shopVoucherRate = (parseFloat(document.getElementById('shopee-svoucher-rate').value) || 0) / 100;
-        const packRate = (parseFloat(document.getElementById('shopee-pack-rate').value) || 0) / 100;
+        const piShip = parseFloat(document.getElementById('shopee-piship').value) || 0;
+        const infra = parseFloat(document.getElementById('shopee-infra').value) || 0;
+        const flatFeesUnit = (piShip + infra);
+
+        const V_CAP = 50000;
+        const F_CAP = 40000;
+
+        const rows = document.querySelectorAll('.product-row');
+        let totalMerchCNY = 0;
+        let totalQty = 0;
+
+        const productData = Array.from(rows).map(row => {
+            const price = parseFloat(row.querySelector('.p-price').value) || 0;
+            const qty = parseInt(row.querySelector('.p-qty').value) || 0;
+            const imgInput = row.querySelector('.p-img-url');
+            const imgContainer = row.querySelector('.img-preview');
+            
+            // Sync Preview
+            if (imgInput.value) {
+                let img = imgContainer.querySelector('img');
+                if (!img) { img = document.createElement('img'); imgContainer.appendChild(img); }
+                img.src = imgInput.value;
+            } else {
+                const img = imgContainer.querySelector('img');
+                if (img) img.remove();
+            }
+
+            totalMerchCNY += (price * qty);
+            totalQty += qty;
+            return { price, qty, landedEl: row.querySelector('.p-landed-cost'), shopeeEl: row.querySelector('.p-shopee-price') };
+        });
+
+        const totalProductVND = totalMerchCNY * rate;
         
-        const piShipFee = parseFloat(document.getElementById('shopee-piship').value) || 0;
-        const infraFee = parseFloat(document.getElementById('shopee-infra').value) || 0;
-        const flatFeesPerOrder = piShipFee + infraFee;
+        // Fee Calculation
+        let serviceRate = 0.03;
+        if (totalProductVND > 100000000) serviceRate = 0.01;
+        else if (totalProductVND > 30000000) serviceRate = 0.02;
+        else if (totalProductVND > 3000000) serviceRate = 0.025;
+        let serviceFee = totalProductVND > 0 ? Math.max(5000, totalProductVND * serviceRate) : 0;
 
-        // Capped Rates (Shopee Policy)
-        const VEXTRA_CAP = 50000;
-        const FXTRA_CAP = 40000;
+        const volW = (L * W * H) / 6000;
+        const chargeW = Math.max(weight, volW, rows.length > 0 ? 0.3 : 0);
+        let sRate = (dest === 'hanoi') ? (chargeW >= 500 ? 22000 : chargeW >= 50 ? 23000 : 24000) : (chargeW >= 500 ? 28000 : chargeW >= 50 ? 29000 : 30000);
+        const shippingFee = chargeW * sRate;
 
-        // ... intermediate logic ...
-        
-        products.forEach(p => {
-            const unitProductVND = p.price * rate;
-            const unitLandedVND = unitProductVND * (1 + feeMultiplier);
-            p.landedCell.textContent = p.price > 0 ? fmt(unitLandedVND) : '0đ';
+        let checkFee = 0;
+        if (isCheck) checkFee = totalQty <= 2 ? 5000 : totalQty <= 10 ? 3000 : 2000;
+        results.itemCheck.classList.toggle('hidden', !isCheck);
 
-            // Shopee Price Formula with CAPS implementation
-            // Since suggested price depends on capped fees, we use a simple iterative refinement (3 passes is enough)
-            let suggestedPrice = unitLandedVND / 0.5; // Initial guess
+        let woodFee = 0;
+        if (isWood) woodFee = (20 + Math.max(0, chargeW - 1)) * rate;
+        results.itemWood.classList.toggle('hidden', !isWood);
+
+        const totalFees = serviceFee + shippingFee + checkFee + woodFee + (cnShipY * rate);
+        const totalOrderVND = totalProductVND + totalFees;
+        const feeMult = totalProductVND > 0 ? (totalFees / totalProductVND) : 0;
+
+        const fmt = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(v));
+        let totalRevenue = 0;
+
+        productData.forEach(p => {
+            const unitLanded = (p.price * rate) * (1 + feeMult);
+            p.landedEl.textContent = p.price > 0 ? fmt(unitLanded) : '0đ';
+
+            // Shopee price (Iterative for caps)
+            let sp = unitLanded / 0.7;
             for (let i = 0; i < 5; i++) {
-                const vxtraFee = Math.min(suggestedPrice * shopeeVxtraRate, VEXTRA_CAP);
-                const fxtraFee = Math.min(suggestedPrice * shopeeFxtraRate, FXTRA_CAP);
-                const unitFlatFee = totalQty > 0 ? (flatFeesPerOrder / totalQty) : 0;
-                
-                // Effective rates for variable fees (excluding capped items)
-                const otherFeesRate = shopeeFixedRate + shopeePayRate + shopeeAdsRate + shopeeTaxRate + staffBonusRate + shopVoucherRate + packRate;
-                
-                // TargetPrice = (Landed + FlatFees + CappedFees) / (1 - OtherFees% - TargetProfit%)
-                const divisor = 1 - (otherFeesRate + targetProfitRate);
-                if (divisor > 0) {
-                    suggestedPrice = (unitLandedVND + unitFlatFee + vxtraFee + fxtraFee) / (1 - otherFeesRate - targetProfitRate);
-                }
+                const vx = Math.min(sp * sVxtra, V_CAP);
+                const fx = Math.min(sp * sFxtra, F_CAP);
+                const flat = totalQty > 0 ? (flatFeesUnit / totalQty) : 0;
+                const varRate = sFixed + sPay + sAds + sTax + sStaff + sVoucher + sPack;
+                const div = 1 - (varRate + tProfit);
+                if (div > 0) sp = (unitLanded + flat + vx + fx) / div;
             }
 
             if (p.price > 0) {
-                p.shopeeCell.textContent = fmt(suggestedPrice);
-                totalExpectedRevenue += (suggestedPrice * p.qty);
-            } else {
-                p.shopeeCell.textContent = '---';
-            }
+                p.shopeeEl.textContent = fmt(sp);
+                totalRevenue += (sp * p.qty);
+            } else p.shopeeEl.textContent = '---';
         });
 
-        // Update Summary
         results.productPrice.textContent = fmt(totalProductVND);
         results.serviceFee.textContent = fmt(serviceFee);
         results.intlShipping.textContent = fmt(shippingFee);
@@ -131,99 +177,63 @@ document.addEventListener('DOMContentLoaded', () => {
         results.totalCost.textContent = fmt(totalOrderVND);
         results.deposit.textContent = fmt(totalOrderVND * 0.7);
 
-        // Update Analytics
-        const totalProfit = totalExpectedRevenue * targetProfitRate;
-        const roi = totalOrderVND > 0 ? (totalProfit / totalOrderVND * 100) : 0;
-
+        const profit = totalRevenue * tProfit;
         document.getElementById('stat-total-capital').textContent = fmt(totalOrderVND);
-        document.getElementById('stat-total-revenue').textContent = fmt(totalExpectedRevenue);
-        document.getElementById('stat-total-profit').textContent = fmt(totalProfit);
-        document.getElementById('stat-roi').textContent = Math.round(roi) + '%';
+        document.getElementById('stat-total-revenue').textContent = fmt(totalRevenue);
+        document.getElementById('stat-total-profit').textContent = fmt(profit);
+        document.getElementById('stat-roi').textContent = Math.round(totalOrderVND > 0 ? (profit/totalOrderVND*100) : 0) + '%';
     };
 
-    // Listeners
-    addProductBtn.addEventListener('click', addProductRow);
+    // Global Listeners
+    addProductBtn.onclick = () => addProductRow();
     configInputs.forEach(id => {
-        document.getElementById(id).addEventListener('input', () => {
-            calculate();
-            saveState();
-        });
+        const el = document.getElementById(id);
+        el.addEventListener('input', () => { calculate(); saveState(); });
     });
 
-    // Export to Excel
-    document.getElementById('export-excel-btn').addEventListener('click', () => {
-        const rows = document.querySelectorAll('.product-row');
-        if (rows.length === 0) return alert('Không có dữ liệu để xuất!');
-
-        const data = [
-            ['STT', 'Giá Sản Phẩm (¥)', 'Số Lượng', 'Vốn Về Tay/SP (VNĐ)']
-        ];
-
-        rows.forEach((row, index) => {
-            const price = row.querySelector('.p-price').value;
-            const qty = row.querySelector('.p-qty').value;
-            const landed = row.querySelector('.p-landed-cost').textContent;
-            data.push([index + 1, price, qty, landed]);
+    // Excel
+    document.getElementById('export-excel-btn').onclick = () => {
+        const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Shopee']];
+        document.querySelectorAll('.product-row').forEach((r, i) => {
+            data.push([i+1, r.querySelector('.p-name').value, r.querySelector('.p-price').value, r.querySelector('.p-qty').value, r.querySelector('.p-landed-cost').textContent, r.querySelector('.p-shopee-price').textContent]);
         });
-
-        // Add Summary Info
-        data.push([]);
-        data.push(['TỔNG ĐƠN HÀNG', document.getElementById('total-cost').textContent]);
-        data.push(['TIỀN CỌC (70%)', document.getElementById('deposit-amount').textContent]);
-        data.push(['TỶ GIÁ', document.getElementById('exchange-rate').value]);
-
         const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "DonHang");
-        
-        const fileName = `DonHang_1688_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-    });
+        XLSX.utils.book_append_sheet(wb, ws, "Order");
+        XLSX.writeFile(wb, `OrderPlus_${new Date().getTime()}.xlsx`);
+    };
 
-    // Persistent Storage
     const saveState = () => {
-        const state = {
-            config: {},
-            products: []
-        };
+        const state = { config: {}, items: [] };
         configInputs.forEach(id => {
-            state.config[id] = document.getElementById(id).value;
-            if (document.getElementById(id).type === 'checkbox') {
-                state.config[id] = document.getElementById(id).checked;
-            }
+            const el = document.getElementById(id);
+            state.config[id] = el.type === 'checkbox' ? el.checked : el.value;
         });
-        document.querySelectorAll('.product-row').forEach(row => {
-            state.products.push({
-                price: row.querySelector('.p-price').value,
-                qty: row.querySelector('.p-qty').value
+        document.querySelectorAll('.product-row').forEach(r => {
+            state.items.push({
+                name: r.querySelector('.p-name').value,
+                price: r.querySelector('.p-price').value,
+                qty: r.querySelector('.p-qty').value,
+                img: r.querySelector('.p-img-url').value
             });
         });
-        localStorage.setItem('orderplus_state', JSON.stringify(state));
+        localStorage.setItem('shope_calc_v3', JSON.stringify(state));
     };
 
     const loadState = () => {
-        const saved = localStorage.getItem('orderplus_state');
-        if (!saved) {
-            addProductRow();
-            return;
-        }
+        const saved = localStorage.getItem('shope_calc_v3');
+        if (!saved) { addProductRow(); return; }
         const state = JSON.parse(saved);
         configInputs.forEach(id => {
             const el = document.getElementById(id);
-            if (el.type === 'checkbox') el.checked = state.config[id];
-            else el.value = state.config[id];
+            if (el && state.config[id] !== undefined) {
+                if (el.type === 'checkbox') el.checked = state.config[id];
+                else el.value = state.config[id];
+            }
         });
-        state.products.forEach(p => {
-            const clone = rowTemplate.content.cloneNode(true);
-            clone.querySelector('.p-price').value = p.price;
-            clone.querySelector('.p-qty').value = p.qty;
-            productList.appendChild(clone);
-        });
-        refreshIcons();
-        attachRowListeners();
+        state.items.forEach(item => addProductRow(item));
         calculate();
     };
 
-    // Init
     loadState();
 });
