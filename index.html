@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1688 Cost Master - OrderPlus Pro</title>
-    <meta name="description" content="Công cụ tính toán chi phí nhập hàng từ 1688, Taobao và tính giá vốn từng sản phẩm.">
+    <title>OrderPlus Pro - Master Your Profits</title>
+    <meta name="description" content="Công cụ tính định giá bán Shopee & TikTok Shop chuyên nghiệp từ nguồn hàng 1688/Taobao.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
     <div class="app-container">
         <header>
             <div class="logo">
-                <i data-lucide="package" class="icon-logo"></i>
+                <i data-lucide="shield-check" class="icon-logo"></i>
                 <h1>Order<span>Plus</span> Pro</h1>
             </div>
             <div class="header-actions">
@@ -25,341 +25,231 @@
                 <button id="export-excel-btn" class="btn-icon secondary"><i data-lucide="file-spreadsheet"></i> Xuất Excel</button>
                 <div class="exchange-rate-badge">
                     <i data-lucide="trending-up"></i>
-                    <span>Tỷ giá: <input type="number" id="exchange-rate" value="3950"> đ</span>
+                    <span><input type="number" id="exchange-rate" value="3950"> đ</span>
                 </div>
             </div>
         </header>
 
         <main>
-            <!-- Global Config Card -->
-            <section class="card config-card">
-                <div class="card-header">
-                    <i data-lucide="settings"></i>
-                    <h2>Cấu hình đơn hàng</h2>
-                </div>
-                <div class="config-grid">
-                    <div class="input-group">
-                        <label for="cn-shipping">Ship nội địa Trung (¥)</label>
-                        <input type="number" id="cn-shipping" value="0" step="0.1">
-                    </div>
-                    <div class="input-group">
-                        <label for="weight">Cân nặng thực tế (kg)</label>
-                        <input type="number" id="weight" value="0" step="0.1">
-                    </div>
-                    <div class="input-group">
-                        <label for="destination">Đích đến</label>
-                        <select id="destination">
-                            <option value="hanoi">Hà Nội</option>
-                            <option value="hcm">TP. Hồ Chí Minh</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="dimensions-grid">
-                    <div class="input-group">
-                        <label>Dài (cm)</label>
-                        <input type="number" id="dim-l" value="0">
-                    </div>
-                    <div class="input-group">
-                        <label>Rộng (cm)</label>
-                        <input type="number" id="dim-w" value="0">
-                    </div>
-                    <div class="input-group">
-                        <label>Cao (cm)</label>
-                        <input type="number" id="dim-h" value="0">
-                    </div>
-                </div>
-                <div class="checkbox-group">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="check-goods">
-                        <span class="checkmark"></span>
-                        Kiểm đếm hàng hóa
-                    </label>
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="wood-pack">
-                        <span class="checkmark"></span>
-                        Đóng kiện gỗ
-                    </label>
-                </div>
-            </section>
-
             <div class="main-grid">
-                <!-- Product List Section -->
-                <section class="card product-section">
-                    <div class="card-header">
-                        <div class="header-left">
-                            <i data-lucide="list"></i>
-                            <h2>Sản phẩm & Giá sàn</h2>
+                <!-- Left Column: Products & Combos -->
+                <div class="product-column">
+                    <!-- Product List Section -->
+                    <section class="card product-section">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <i data-lucide="layout-list"></i>
+                                <h2>Sản phẩm & Giá sàn</h2>
+                            </div>
+                            <div class="platform-switch">
+                                <label class="switch-option active" data-platform="shopee">
+                                    <i data-lucide="shopping-bag"></i> Shopee
+                                </label>
+                                <label class="switch-option" data-platform="tiktok">
+                                    <i data-lucide="music-2"></i> TikTok
+                                </label>
+                            </div>
+                            <button id="add-product-btn" class="btn-icon"><i data-lucide="plus"></i> Thêm SP</button>
                         </div>
-                        <div class="platform-switch">
-                            <label class="switch-option active" data-platform="shopee">
-                                <i data-lucide="shopping-bag"></i> Shopee
-                            </label>
-                            <label class="switch-option" data-platform="tiktok">
-                                <i data-lucide="music-2"></i> TikTok
-                            </label>
+                        
+                        <div class="product-table-wrapper">
+                            <table id="product-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ảnh</th>
+                                        <th>Thông tin SP</th>
+                                        <th>Vốn</th>
+                                        <th>Giá Gợi Ý</th>
+                                        <th>Đối Thủ</th>
+                                        <th>Flash %</th>
+                                        <th>Bạn Bán</th>
+                                        <th>Lời Thật</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="product-list">
+                                    <!-- Products added here -->
+                                </tbody>
+                            </table>
                         </div>
-                        <button id="add-product-btn" class="btn-icon"><i data-lucide="plus"></i> Thêm SP</button>
-                    </div>
-                    
-                    <div class="product-table-wrapper">
-                        <table id="product-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 80px;">Ảnh</th>
-                                    <th>Sản phẩm</th>
-                                    <th>Vốn về tay</th>
-                                    <th>Giá Sàn Gợi Ý</th>
-                                    <th>Giá Đối Thủ</th>
-                                    <th>Flash Sale (%)</th>
-                                    <th>Giá Bạn Bán</th>
-                                    <th>Lời Nhuận Thật</th>
-                                    <th style="width: 50px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="product-list">
-                                <!-- Products added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
+                    </section>
 
-                <!-- Summary Section -->
-                <section class="card result-section">
-                    <div class="card-header">
-                        <i data-lucide="bar-chart-3"></i>
-                        <h2>Tổng quan chi phí</h2>
-                    </div>
-                    
-                    <div class="cost-breakdown">
-                        <div class="cost-item">
-                            <span>Tiền hàng (VND)</span>
-                            <span id="res-product-price">0đ</span>
+                    <!-- Combo Builder Section -->
+                    <section class="card combo-section">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <i data-lucide="layers"></i>
+                                <h2>Bộ Combo (Bundles)</h2>
+                            </div>
+                            <button id="add-combo-btn" class="btn-icon secondary"><i data-lucide="plus-circle"></i> Tạo Combo</button>
                         </div>
-                        <div class="cost-item">
-                            <span>Phí dịch vụ</span>
-                            <span id="res-service-fee">0đ</span>
+                        <div id="combo-list" class="combo-container">
+                            <!-- Combos will be added here -->
                         </div>
-                        <div class="cost-item">
-                            <span>Vận chuyển QT</span>
-                            <span id="res-intl-shipping">0đ</span>
-                        </div>
-                        <div class="cost-item hidden" id="item-check-goods">
-                            <span>Phí kiểm đếm</span>
-                            <span id="res-check-fee">0đ</span>
-                        </div>
-                        <div class="cost-item hidden" id="item-wood-pack">
-                            <span>Phí đóng kiện gỗ</span>
-                            <span id="res-wood-fee">0đ</span>
-                        </div>
-                        
-                        <div class="divider"></div>
-                        <div class="total-row">
-                            <span>TỔNG CỘNG</span>
-                            <span id="total-cost" class="highlight">0đ</span>
-                        </div>
-                        
-                        <div class="payment-summary">
-                            <div class="payment-card deposit">
-                                <span class="label">Cần cọc (70%)</span>
-                                <span id="deposit-amount">0đ</span>
+                    </section>
+                </div>
+
+                <!-- Right Column: Config & Statistics -->
+                <aside class="sidebar-column">
+                    <!-- Global Config Card -->
+                    <section class="card config-card">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <i data-lucide="settings-2"></i>
+                                <h2>Cấu hình vận chuyển</h2>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <!-- Pricing Section -->
-                <section class="card shopee-section">
-                    <div class="card-header">
-                        <i data-lucide="shopping-bag" id="platform-icon" style="color: #ee4d2d;"></i>
-                        <h2 id="platform-title">Cấu hình Shopee</h2>
-                    </div>
-                    
-                    <div class="shopee-config-grid">
-                        <div class="input-group">
-                            <label>Lợi nhuận (%)</label>
-                            <input type="number" id="target-profit" value="20" step="1">
+                        <div class="config-grid">
+                            <div class="input-group">
+                                <label>Ship nội địa Trung (¥)</label>
+                                <input type="number" id="cn-shipping" value="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Cân thực tế (kg)</label>
+                                <input type="number" id="weight" value="0" step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Vận chuyển về</label>
+                                <select id="destination">
+                                    <option value="hanoi">Hà Nội</option>
+                                    <option value="hcm">TP. Hồ Chí Minh</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Marketing/Ads (%)</label>
-                            <input type="number" id="shopee-mkt-fee" value="10" step="1">
+                        <div class="dimensions-grid" style="margin-top: 1rem;">
+                            <div class="input-group"><label>Dài</label><input type="number" id="dim-l" value="0"></div>
+                            <div class="input-group"><label>Rộng</label><input type="number" id="dim-w" value="0"></div>
+                            <div class="input-group"><label>Cao</label><input type="number" id="dim-h" value="0"></div>
                         </div>
-                        <div class="input-group">
-                            <label>Phí cố định (%)</label>
-                            <input type="number" id="shopee-fixed-fee" value="10" step="0.1">
+                        <div class="checkbox-group" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                            <label class="checkbox-container" style="display: flex; gap: 8px; cursor: pointer; font-size: 0.8rem;">
+                                <input type="checkbox" id="check-goods"> Kiểm đếm
+                            </label>
+                            <label class="checkbox-container" style="display: flex; gap: 8px; cursor: pointer; font-size: 0.8rem;">
+                                <input type="checkbox" id="wood-pack"> Đóng gỗ
+                            </label>
                         </div>
-                        <div class="input-group">
-                            <label>Voucher Xtra (%)</label>
-                            <input type="number" id="shopee-vxtra-fee" value="4" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label>FreeShip Xtra (%)</label>
-                            <input type="number" id="shopee-fxtra-fee" value="7" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label>QC & MKT (%)</label>
-                            <input type="number" id="shopee-ads-fee" value="15" step="1">
-                        </div>
-                        <div class="input-group">
-                            <label>Thuế HKD (%)</label>
-                            <input type="number" id="shopee-tax-fee" value="1.5" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label>Phí thanh toán (%)</label>
-                            <input type="number" id="shopee-pay-fee" value="4.91" step="0.01">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label>PiShip (đ/đơn)</label>
-                            <input type="number" id="shopee-piship" value="1620" step="10">
-                        </div>
-                        <div class="input-group">
-                            <label>Hạ tầng (đ/đơn)</label>
-                            <input type="number" id="shopee-infra" value="3000" step="100">
-                        </div>
-                        <div class="input-group">
-                            <label>Đóng gói (%)</label>
-                            <input type="number" id="shopee-pack-rate" value="1" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label>Thưởng NV (%)</label>
-                            <input type="number" id="shopee-staff-rate" value="0.5" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label>Voucher Shop (%)</label>
-                            <input type="number" id="shopee-svoucher-rate" value="1" step="0.1">
-                        </div>
-                    </div>
+                    </section>
 
-                    <div class="info-note small">
-                        <i data-lucide="info"></i>
-                        <p>Tất cả các loại phí trên đều có thể tùy chỉnh. Giá bán đề xuất sẽ tự động tính toán lại ngay khi bạn thay đổi thông số.</p>
-                    </div>
-                </section>
+                    <!-- Platform Fee Config -->
+                    <section class="card pricing-section">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <i data-lucide="shopping-bag" id="platform-icon" style="color: #ee4d2d;"></i>
+                                <h2 id="platform-title">Cấu hình Shopee</h2>
+                            </div>
+                        </div>
+                        <div class="shopee-config-grid">
+                            <div class="input-group"><label>Lợi nhuận (%)</label><input type="number" id="target-profit" value="20"></div>
+                            <div class="input-group"><label>Mkt/Ads (%)</label><input type="number" id="shopee-mkt-fee" value="10"></div>
+                            <div class="input-group"><label>Cố định (%)</label><input type="number" id="shopee-fixed-fee" value="10"></div>
+                            <div class="input-group"><label>V-Xtra (%)</label><input type="number" id="shopee-vxtra-fee" value="4"></div>
+                            <div class="input-group"><label>F-Xtra (%)</label><input type="number" id="shopee-fxtra-fee" value="7"></div>
+                            <div class="input-group"><label>Phí Pay (%)</label><input type="number" id="shopee-pay-fee" value="4.91"></div>
+                            <div class="input-group"><label>Thuế HKD (%)</label><input type="number" id="shopee-tax-fee" value="1.5"></div>
+                            <div class="input-group"><label>Đóng gói (%)</label><input type="number" id="shopee-pack-rate" value="1"></div>
+                            <div class="input-group"><label>PiShip (đ)</label><input type="number" id="shopee-piship" value="1620"></div>
+                            <div class="input-group"><label>Hạ tầng (đ)</label><input type="number" id="shopee-infra" value="3000"></div>
+                        </div>
+                        <div class="hidden">
+                             <input type="number" id="shopee-staff-rate" value="0.5">
+                             <input type="number" id="shopee-svoucher-rate" value="1">
+                        </div>
+                    </section>
 
-                <!-- Analytics Dashboard -->
-                <section class="card analytics-section">
-                    <div class="card-header">
-                        <i data-lucide="pie-chart"></i>
-                        <h2>Phân tích Kinh doanh</h2>
-                    </div>
-                    <div class="analytics-grid">
-                        <div class="stat-card">
-                            <span class="label">Tổng Vốn Đầu Tư</span>
-                            <span id="stat-total-capital">0đ</span>
+                    <!-- Analytics Section -->
+                    <section class="card result-section">
+                        <div class="card-header">
+                            <div class="header-left">
+                                <i data-lucide="trending-up"></i>
+                                <h2>Hiệu quả kinh doanh</h2>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <span class="label">Doanh Thu Dự Kiến</span>
-                            <span id="stat-total-revenue">0đ</span>
+                        <div class="analytics-grid">
+                            <div class="stat-card">
+                                <span class="label">Vốn đầu tư</span>
+                                <span id="stat-total-capital">0đ</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="label">Thực thu (Cọc 70%)</span>
+                                <span id="deposit-amount">0đ</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="label">Doanh thu dự kiến</span>
+                                <span id="stat-total-revenue">0đ</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="label">ROI</span>
+                                <span id="stat-roi">0%</span>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <span class="label">Lợi Nhuận Ròng</span>
-                            <span id="stat-total-profit" class="success">0đ</span>
+                        <div class="divider"></div>
+                        <div class="total-row">
+                            <span>LỢI NHUẬN RÒNG</span>
+                            <span id="stat-total-profit" class="highlight">0đ</span>
                         </div>
-                        <div class="stat-card">
-                            <span class="label">ROI (%)</span>
-                            <span id="stat-roi">0%</span>
+                        <div class="cost-breakdown" style="font-size: 0.75rem; margin-top: 1rem;">
+                            <div class="cost-item"><span>Tiền hàng hóa:</span><span id="res-product-price">0đ</span></div>
+                            <div class="cost-item"><span>Phí mua hàng:</span><span id="res-service-fee">0đ</span></div>
+                            <div class="cost-item"><span>Cước vận chuyển:</span><span id="res-intl-shipping">0đ</span></div>
+                            <div class="cost-item hidden" id="item-check-goods"><span>Phí kiểm đếm:</span><span id="res-check-fee">0đ</span></div>
+                            <div class="cost-item hidden" id="item-wood-pack"><span>Phí đóng gỗ:</span><span id="res-wood-fee">0đ</span></div>
                         </div>
-                    </div>
-                </section>
-
-                <!-- Combo Builder Section -->
-                <section class="card combo-section">
-                    <div class="card-header">
-                        <i data-lucide="layers"></i>
-                        <h2>Tính giá Combo Shopee</h2>
-                        <button id="add-combo-btn" class="btn-icon"><i data-lucide="plus"></i> Tạo Combo</button>
-                    </div>
-                    <div id="combo-list" class="combo-container">
-                        <!-- Combos will be added here -->
-                    </div>
-                </section>
+                    </section>
+                </aside>
             </div>
         </main>
     </div>
 
-    <!-- Combo Item Template -->
-    <template id="combo-item-template">
-        <div class="combo-item">
-            <select class="combo-product-select">
-                <option value="">Chọn sản phẩm...</option>
-            </select>
-            <div class="qty-control">
-                <span>x</span>
-                <input type="number" class="combo-qty" value="1" min="1">
-            </div>
-            <button class="remove-item-btn"><i data-lucide="x"></i></button>
-        </div>
+    <!-- Row Template -->
+    <template id="product-row-template">
+        <tr class="product-row">
+            <td class="col-img">
+                <div class="img-preview">
+                    <i data-lucide="camera" style="width: 14px;"></i>
+                    <input type="text" class="p-img-url">
+                </div>
+            </td>
+            <td>
+                <input type="text" class="p-name" placeholder="Tên sp...">
+                <div class="input-inline">
+                    <input type="number" class="p-price" placeholder="Giá ¥">
+                    <input type="number" class="p-qty" value="1" placeholder="SL">
+                </div>
+            </td>
+            <td><span class="p-landed-cost">0đ</span></td>
+            <td><span class="p-shopee-price">0đ</span></td>
+            <td><input type="number" class="p-comp-price" style="width: 70px !important;"></td>
+            <td><input type="number" class="p-fs-rate" placeholder="%" style="width: 50px !important;"></td>
+            <td><input type="number" class="p-actual-price" style="width: 80px !important; border: 1.5px solid var(--primary-color) !important;"></td>
+            <td><span class="p-real-profit">0đ</span></td>
+            <td><button class="remove-btn"><i data-lucide="trash-2" style="width: 16px;"></i></button></td>
+        </tr>
     </template>
 
     <!-- Combo Card Template -->
     <template id="combo-card-template">
         <div class="combo-card card">
             <div class="combo-card-header">
-                <input type="text" class="combo-name" placeholder="Tên Combo (VD: Bộ 5 cái + Bơm)">
-                <button class="remove-combo-btn text-danger"><i data-lucide="trash-2"></i></button>
+                <input type="text" class="combo-name" placeholder="Tên Combo...">
+                <button class="remove-combo-btn remove-btn"><i data-lucide="trash"></i></button>
             </div>
-            <div class="combo-items-list">
-                <!-- Items added here -->
-            </div>
-            <button class="add-item-to-combo-btn btn-text"><i data-lucide="plus-circle"></i> Thêm sản phẩm vào combo</button>
-            
+            <div class="combo-items-list" style="margin-top: 1rem;"></div>
+            <button class="add-item-to-combo-btn btn-text"><i data-lucide="plus"></i> Thêm sản phẩm</button>
             <div class="combo-result">
-                <div class="res-item">
-                    <span class="label">Tổng vốn về tay:</span>
-                    <span class="val c-total-landed">0đ</span>
-                </div>
-                <div class="res-item main">
-                    <span class="label">Giá bán Combo Shopee:</span>
-                    <span class="val c-shopee-price">0đ</span>
-                </div>
+                <div class="res-item"><span>Tổng vốn:</span> <span class="c-total-landed">0đ</span></div>
+                <div class="res-item main"><span>Giá bán sàn:</span> <span class="c-shopee-price">0đ</span></div>
             </div>
         </div>
     </template>
 
-    <!-- Row Template Update -->
-    <template id="product-row-template">
-        <tr class="product-row">
-            <td class="col-img">
-                <div class="img-preview">
-                    <i data-lucide="image"></i>
-                    <input type="text" class="p-img-url" placeholder="Link ảnh">
-                </div>
-            </td>
-            <td>
-                <input type="text" class="p-name" placeholder="Tên/Ghi chú SP">
-                <div class="input-inline">
-                    <input type="number" class="p-price" step="0.01" placeholder="Giá ¥">
-                    <input type="number" class="p-qty" value="1" min="1" placeholder="SL">
-                </div>
-            </td>
-            <td>
-                <div class="cost-stack">
-                    <span class="p-landed-cost">0đ</span>
-                    <span class="label">vốn về tay</span>
-                </div>
-            </td>
-            <td>
-                <div class="cost-stack">
-                    <span class="p-shopee-price">0đ</span>
-                    <span class="label">sàn gợi ý</span>
-                </div>
-            </td>
-            <td>
-                <input type="number" class="p-comp-price" placeholder="Giá đối thủ">
-            </td>
-            <td>
-                <input type="number" class="p-fs-rate" placeholder="0" value="0">
-            </td>
-            <td>
-                <input type="number" class="p-actual-price" placeholder="Giá bán">
-            </td>
-            <td>
-                <div class="cost-stack">
-                    <span class="p-real-profit">0đ</span>
-                    <span class="label">lãi thực/sp</span>
-                </div>
-            </td>
-            <td><button class="remove-btn"><i data-lucide="trash-2"></i></button></td>
-        </tr>
+    <!-- Combo Item Template -->
+    <template id="combo-item-template">
+        <div class="combo-item">
+            <select class="combo-product-select"></select>
+            <div class="qty-control"><span>x</span><input type="number" class="combo-qty" value="1"></div>
+            <button class="remove-item-btn"><i data-lucide="x"></i></button>
+        </div>
     </template>
 
     <script src="script.js"></script>
