@@ -11,7 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const configInputs = [
         'exchange-rate', 'cn-shipping', 'weight', 'dim-l', 'dim-w', 'dim-h', 
         'destination', 'check-goods', 'wood-pack',
-        'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 'shopee-ads-fee', 'shopee-vxtra-fee', 'shopee-tax-fee'
+        'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 'shopee-ads-fee', 
+        'shopee-vxtra-fee', 'shopee-fxtra-fee', 'shopee-tax-fee',
+        'shopee-piship', 'shopee-infra', 'shopee-pack-rate', 'shopee-staff-rate', 'shopee-svoucher-rate'
     ];
 
     const results = {
@@ -74,11 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const shopeeFxtraRate = (parseFloat(document.getElementById('shopee-fxtra-fee').value) || 0) / 100;
         const shopeeTaxRate = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
         
-        // Operational percentages (Fixed per your request)
-        const staffBonusRate = 0.0075; // 0.5-1%
-        const shopVoucherRate = 0.015; // 1-2%
-        const packRate = 0.0075; // 0.5-1%
-        const flatFeesPerOrder = 1620 + 3000; // PiShip + Ha Tang
+        // Operational percentages (Now adjustable from UI)
+        const staffBonusRate = (parseFloat(document.getElementById('shopee-staff-rate').value) || 0) / 100;
+        const shopVoucherRate = (parseFloat(document.getElementById('shopee-svoucher-rate').value) || 0) / 100;
+        const packRate = (parseFloat(document.getElementById('shopee-pack-rate').value) || 0) / 100;
+        
+        const piShipFee = parseFloat(document.getElementById('shopee-piship').value) || 0;
+        const infraFee = parseFloat(document.getElementById('shopee-infra').value) || 0;
+        const flatFeesPerOrder = piShipFee + infraFee;
 
         // Capped Rates (Shopee Policy)
         const VEXTRA_CAP = 50000;

@@ -158,16 +158,12 @@
                     
                     <div class="shopee-config-grid">
                         <div class="input-group">
-                            <label>Lợi nhuận mong muốn (%)</label>
+                            <label>Lợi nhuận (%)</label>
                             <input type="number" id="target-profit" value="20" step="1">
                         </div>
                         <div class="input-group">
-                            <label>Phí cố định Shopee (%)</label>
+                            <label>Phí cố định (%)</label>
                             <input type="number" id="shopee-fixed-fee" value="10" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label>Phí thanh toán (%)</label>
-                            <input type="number" id="shopee-pay-fee" value="4.91" step="0.01">
                         </div>
                         <div class="input-group">
                             <label>Voucher Xtra (%)</label>
@@ -178,26 +174,43 @@
                             <input type="number" id="shopee-fxtra-fee" value="7" step="1">
                         </div>
                         <div class="input-group">
-                            <label>QC & Marketing (%)</label>
+                            <label>QC & MKT (%)</label>
                             <input type="number" id="shopee-ads-fee" value="15" step="1">
                         </div>
                         <div class="input-group">
                             <label>Thuế HKD (%)</label>
                             <input type="number" id="shopee-tax-fee" value="1.5" step="0.1">
                         </div>
-                    </div>
-
-                    <div class="shopee-fees-list">
-                        <div class="fee-badge">PiShip: 1.620đ/đơn</div>
-                        <div class="fee-badge">Hạ tầng: 3.000đ/đơn</div>
-                        <div class="fee-badge">Đóng gói: 1%</div>
-                        <div class="fee-badge">Thưởng NV: 0.5%</div>
-                        <div class="fee-badge">Voucher Shop: 1%</div>
+                        <div class="input-group">
+                            <label>Phí thanh toán (%)</label>
+                            <input type="number" id="shopee-pay-fee" value="4.91" step="0.01">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>PiShip (đ/đơn)</label>
+                            <input type="number" id="shopee-piship" value="1620" step="10">
+                        </div>
+                        <div class="input-group">
+                            <label>Hạ tầng (đ/đơn)</label>
+                            <input type="number" id="shopee-infra" value="3000" step="100">
+                        </div>
+                        <div class="input-group">
+                            <label>Đóng gói (%)</label>
+                            <input type="number" id="shopee-pack-rate" value="1" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Thưởng NV (%)</label>
+                            <input type="number" id="shopee-staff-rate" value="0.5" step="0.1">
+                        </div>
+                        <div class="input-group">
+                            <label>Voucher Shop (%)</label>
+                            <input type="number" id="shopee-svoucher-rate" value="1" step="0.1">
+                        </div>
                     </div>
 
                     <div class="info-note small">
                         <i data-lucide="info"></i>
-                        <p>Giá bán đề xuất được tính toán để đảm bảo mốc lợi nhuận bạn mong muốn sau khi trừ tất cả chi phí sàn và vận hành.</p>
+                        <p>Tất cả các loại phí trên đều có thể tùy chỉnh. Giá bán đề xuất sẽ tự động tính toán lại ngay khi bạn thay đổi thông số.</p>
                     </div>
                 </section>
 
