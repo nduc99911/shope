@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1688 Cost Master - OrderPlus Calculator</title>
-    <meta name="description" content="Công cụ tính toán chi phí nhập hàng từ 1688, Taobao thông qua OrderPlus. Nhanh chóng, chính xác và chuyên nghiệp.">
+    <title>1688 Cost Master - OrderPlus Pro</title>
+    <meta name="description" content="Công cụ tính toán chi phí nhập hàng từ 1688, Taobao và tính giá vốn từng sản phẩm.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
         <header>
             <div class="logo">
                 <i data-lucide="package" class="icon-logo"></i>
-                <h1>Order<span>Plus</span> Calc</h1>
+                <h1>Order<span>Plus</span> Pro</h1>
             </div>
             <div class="exchange-rate-badge">
                 <i data-lucide="trending-up"></i>
@@ -25,88 +25,101 @@
         </header>
 
         <main>
-            <div class="calculator-grid">
-                <!-- Input Section -->
-                <section class="card input-section">
-                    <div class="card-header">
-                        <i data-lucide="edit-3"></i>
-                        <h2>Thông tin đơn hàng</h2>
-                    </div>
-                    <div class="input-group">
-                        <label for="product-price">Giá sản phẩm (¥)</label>
-                        <input type="number" id="product-price" placeholder="0.00" step="0.01">
-                    </div>
+            <!-- Global Config Card -->
+            <section class="card config-card">
+                <div class="card-header">
+                    <i data-lucide="settings"></i>
+                    <h2>Cấu hình đơn hàng</h2>
+                </div>
+                <div class="config-grid">
                     <div class="input-group">
                         <label for="cn-shipping">Ship nội địa Trung (¥)</label>
-                        <input type="number" id="cn-shipping" value="0" step="0.01">
+                        <input type="number" id="cn-shipping" value="0" step="0.1">
                     </div>
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label for="weight">Cân nặng (kg)</label>
-                            <input type="number" id="weight" value="0" step="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="quantity">Số lượng (cái)</label>
-                            <input type="number" id="quantity" value="1">
-                        </div>
+                    <div class="input-group">
+                        <label for="weight">Cân nặng thực tế (kg)</label>
+                        <input type="number" id="weight" value="0" step="0.1">
                     </div>
-                    <div class="dimensions-grid">
-                        <div class="input-group">
-                            <label>Dài (cm)</label>
-                            <input type="number" id="dim-l" value="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Rộng (cm)</label>
-                            <input type="number" id="dim-w" value="0">
-                        </div>
-                        <div class="input-group">
-                            <label>Cao (cm)</label>
-                            <input type="number" id="dim-h" value="0">
-                        </div>
+                    <div class="input-group">
+                        <label for="destination">Đích đến</label>
+                        <select id="destination">
+                            <option value="hanoi">Hà Nội</option>
+                            <option value="hcm">TP. Hồ Chí Minh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dimensions-grid">
+                    <div class="input-group">
+                        <label>Dài (cm)</label>
+                        <input type="number" id="dim-l" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Rộng (cm)</label>
+                        <input type="number" id="dim-w" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Cao (cm)</label>
+                        <input type="number" id="dim-h" value="0">
+                    </div>
+                </div>
+                <div class="checkbox-group">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="check-goods">
+                        <span class="checkmark"></span>
+                        Kiểm đếm hàng hóa
+                    </label>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="wood-pack">
+                        <span class="checkmark"></span>
+                        Đóng kiện gỗ
+                    </label>
+                </div>
+            </section>
+
+            <div class="main-grid">
+                <!-- Product List Section -->
+                <section class="card product-section">
+                    <div class="card-header">
+                        <i data-lucide="list"></i>
+                        <h2>Danh sách sản phẩm</h2>
+                        <button id="add-product-btn" class="btn-icon"><i data-lucide="plus"></i> Thêm SP</button>
                     </div>
                     
-                    <div class="options-grid">
-                        <div class="input-group">
-                            <label for="destination">Đích đến</label>
-                            <select id="destination">
-                                <option value="hanoi">Hà Nội</option>
-                                <option value="hcm">TP. Hồ Chí Minh</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="checkbox-group">
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="check-goods">
-                            <span class="checkmark"></span>
-                            Kiểm đếm hàng hóa
-                        </label>
-                        <label class="checkbox-container">
-                            <input type="checkbox" id="wood-pack">
-                            <span class="checkmark"></span>
-                            Đóng kiện gỗ
-                        </label>
+                    <div class="product-table-wrapper">
+                        <table id="product-table">
+                            <thead>
+                                <tr>
+                                    <th>Giá (¥)</th>
+                                    <th>Số lượng</th>
+                                    <th>Vốn về tay/SP</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="product-list">
+                                <!-- Products added here -->
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
-                <!-- Result Section -->
+                <!-- Summary Section -->
                 <section class="card result-section">
                     <div class="card-header">
                         <i data-lucide="bar-chart-3"></i>
-                        <h2>Chi tiết chi phí</h2>
+                        <h2>Tổng quan chi phí</h2>
                     </div>
                     
                     <div class="cost-breakdown">
                         <div class="cost-item">
-                            <span>Giá tiền hàng</span>
+                            <span>Tiền hàng (VND)</span>
                             <span id="res-product-price">0đ</span>
                         </div>
                         <div class="cost-item">
-                            <span>Phí dịch vụ mua hàng</span>
+                            <span>Phí dịch vụ</span>
                             <span id="res-service-fee">0đ</span>
                         </div>
                         <div class="cost-item">
-                            <span>Phí vận chuyển quốc tế</span>
+                            <span>Vận chuyển QT</span>
                             <span id="res-intl-shipping">0đ</span>
                         </div>
                         <div class="cost-item hidden" id="item-check-goods">
@@ -119,7 +132,6 @@
                         </div>
                         
                         <div class="divider"></div>
-                        
                         <div class="total-row">
                             <span>TỔNG CỘNG</span>
                             <span id="total-cost" class="highlight">0đ</span>
@@ -127,28 +139,26 @@
                         
                         <div class="payment-summary">
                             <div class="payment-card deposit">
-                                <span class="label">Cần đặt cọc (70%)</span>
+                                <span class="label">Cần cọc (70%)</span>
                                 <span id="deposit-amount">0đ</span>
                             </div>
-                            <div class="payment-card remaining">
-                                <span class="label">Còn lại (30%)</span>
-                                <span id="remaining-amount">0đ</span>
-                            </div>
                         </div>
-                    </div>
-
-                    <div class="info-note">
-                        <i data-lucide="info"></i>
-                        <p>Cân nặng tính phí là giá trị lớn hơn giữa cân nặng thực tế và cân nặng quy đổi.</p>
                     </div>
                 </section>
             </div>
         </main>
-
-        <footer>
-            <p>&copy; 2024 OrderPlus Calculator Pro. Built for speed & accuracy.</p>
-        </footer>
     </div>
+
+    <!-- Row Template -->
+    <template id="product-row-template">
+        <tr class="product-row">
+            <td><input type="number" class="p-price" step="0.01" placeholder="0.00"></td>
+            <td><input type="number" class="p-qty" value="1" min="1"></td>
+            <td class="p-landed-cost">0đ</td>
+            <td><button class="remove-btn"><i data-lucide="trash-2"></i></button></td>
+        </tr>
+    </template>
+
     <script src="script.js"></script>
 </body>
 </html>

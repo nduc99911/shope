@@ -7,6 +7,7 @@
     --accent-color: #f59e0b;
     --accent-hover: #d97706;
     --success-color: #10b981;
+    --danger-color: #ef4444;
     --glass-effect: blur(12px) saturate(180%);
     --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --font-main: 'Inter', sans-serif;
@@ -30,12 +31,12 @@ body {
 
 .app-container {
     width: 100%;
-    max-width: 1000px;
-    animation: fadeIn 0.8s ease-out;
+    max-width: 1100px;
+    animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -43,9 +44,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
 }
 
 .logo {
@@ -56,30 +55,22 @@ header {
 
 .icon-logo {
     color: var(--accent-color);
-    width: 32px;
-    height: 32px;
 }
 
 .logo h1 {
     font-size: 1.5rem;
     font-weight: 800;
-    letter-spacing: -0.5px;
 }
 
-.logo h1 span {
-    color: var(--accent-color);
-}
+.logo h1 span { color: var(--accent-color); }
 
 .exchange-rate-badge {
     background: var(--card-bg);
-    backdrop-filter: var(--glass-effect);
     padding: 0.5rem 1rem;
     border-radius: 99px;
     border: 1px solid var(--border-color);
     font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    backdrop-filter: var(--glass-effect);
 }
 
 .exchange-rate-badge input {
@@ -88,23 +79,16 @@ header {
     color: var(--accent-color);
     font-weight: 700;
     width: 60px;
-    font-family: inherit;
-    font-size: inherit;
     outline: none;
-}
-
-.calculator-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 2rem;
 }
 
 .card {
     background: var(--card-bg);
     backdrop-filter: var(--glass-effect);
     border: 1px solid var(--border-color);
-    border-radius: 1.5rem;
-    padding: 2rem;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
     box-shadow: var(--shadow);
 }
 
@@ -112,25 +96,26 @@ header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .card-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
+    flex-grow: 1;
 }
 
-.card-header i {
-    color: var(--accent-color);
-}
+.card-header i { color: var(--accent-color); }
 
-.input-group {
-    margin-bottom: 1.25rem;
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
 }
 
 .input-group label {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
@@ -139,220 +124,108 @@ header {
     width: 100%;
     background: rgba(15, 23, 42, 0.5);
     border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 1rem;
-    transition: all 0.2s;
-}
-
-.input-group input:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
-}
-
-.input-row, .dimensions-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
 }
 
 .dimensions-grid {
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    margin-top: 0.5rem;
+    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .checkbox-group {
-    margin-top: 1.5rem;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
+    margin-top: 1rem;
 }
 
-/* Custom Checkbox */
-.checkbox-container {
-    display: flex;
-    align-items: center;
-    position: relative;
-    padding-left: 2.5rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-    user-select: none;
-    color: var(--text-primary);
-}
-
-.checkbox-container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-.checkmark {
-    position: absolute;
-    top: -2px;
-    left: 0;
-    height: 1.5rem;
-    width: 1.5rem;
-    background-color: rgba(15, 23, 42, 0.5);
-    border: 1px solid var(--border-color);
-    border-radius: 0.4rem;
-}
-
-.checkbox-container:hover input ~ .checkmark {
-    background-color: rgba(15, 23, 42, 0.8);
-}
-
-.checkbox-container input:checked ~ .checkmark {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-}
-
-.checkbox-container input:checked ~ .checkmark:after {
-    display: block;
-}
-
-.checkbox-container .checkmark:after {
-    left: 8px;
-    top: 3px;
-    width: 6px;
-    height: 12px;
-    border: solid white;
-    border-width: 0 3px 3px 0;
-    transform: rotate(45deg);
-}
-
-/* Result Styles */
-.cost-breakdown {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.cost-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-}
-
-.cost-item span:last-child {
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
-.divider {
-    height: 1px;
-    background: var(--border-color);
-    margin: 0.5rem 0;
-}
-
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
-}
-
-.total-row span:first-child {
-    font-weight: 700;
-    color: var(--text-primary);
-    font-size: 1.1rem;
-}
-
-.highlight {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--accent-color) !important;
-}
-
-.payment-summary {
-    margin-top: 2rem;
+.main-grid {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1.5rem;
 }
 
-.payment-card {
-    padding: 1.25rem;
-    border-radius: 1rem;
+/* Product Table */
+.product-table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding-bottom: 0.75rem;
+    text-transform: uppercase;
+}
+
+.product-row td {
+    padding: 0.5rem 0.25rem;
+}
+
+.product-row input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.4rem;
+    border-radius: 0.25rem;
+}
+
+.p-landed-cost {
+    font-weight: 600;
+    color: var(--success-color);
+    font-size: 0.9rem;
+}
+
+.remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger-color);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.remove-btn:hover { opacity: 1; }
+
+.btn-icon {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-color);
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
     display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 0.25rem;
 }
 
-.payment-card.deposit {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-}
+.btn-icon:hover { background: rgba(245, 158, 11, 0.2); }
 
-.payment-card.deposit .label {
-    color: var(--success-color);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
+/* Results */
+.cost-breakdown { display: flex; flex-direction: column; gap: 0.75rem; }
+.cost-item { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-secondary); }
+.cost-item span:last-child { color: var(--text-primary); }
+.divider { height: 1px; background: var(--border-color); margin: 0.5rem 0; }
+.total-row { display: flex; justify-content: space-between; align-items: center; }
+.highlight { font-size: 1.5rem; font-weight: 800; color: var(--accent-color) !important; }
+.payment-card { background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(16, 185, 129, 0.2); }
+.payment-card .label { color: var(--success-color); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.payment-card #deposit-amount { font-size: 1.25rem; font-weight: 700; color: var(--success-color); }
 
-.payment-card.deposit #deposit-amount {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--success-color);
-}
-
-.payment-card.remaining {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-}
-
-.payment-card.remaining .label {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.payment-card.remaining #remaining-amount {
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.info-note {
-    margin-top: 2rem;
-    padding: 1rem;
-    background: rgba(245, 158, 11, 0.05);
-    border-radius: 0.75rem;
-    display: flex;
-    gap: 0.75rem;
-    font-size: 0.8rem;
-    color: #d97706;
-    line-height: 1.5;
-}
-
-.info-note i {
-    flex-shrink: 0;
-}
-
-.hidden {
-    display: none;
-}
-
-footer {
-    text-align: center;
-    margin-top: 3rem;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-}
+.hidden { display: none; }
 
 @media (max-width: 768px) {
-    .calculator-grid {
-        grid-template-columns: 1fr;
-    }
+    .main-grid { grid-template-columns: 1fr; }
+    .checkbox-group { flex-direction: column; gap: 0.5rem; }
 }

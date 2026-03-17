@@ -1,17 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Lucide icons
-    lucide.createIcons();
+    const refreshIcons = () => lucide.createIcons();
+    refreshIcons();
 
     // Elements
-    const inputs = [
-        'exchange-rate', 'product-price', 'cn-shipping', 'weight', 'quantity',
-        'dim-l', 'dim-w', 'dim-h', 'destination', 'check-goods', 'wood-pack'
-    ];
+    const productList = document.getElementById('product-list');
+    const addProductBtn = document.getElementById('add-product-btn');
+    const rowTemplate = document.getElementById('product-row-template');
     
-    const elements = {};
-    inputs.forEach(id => {
-        elements[id] = document.getElementById(id);
-    });
+    const configInputs = [
+        'exchange-rate', 'cn-shipping', 'weight', 'dim-l', 'dim-w', 'dim-h', 
+        'destination', 'check-goods', 'wood-pack'
+    ];
 
     const results = {
         productPrice: document.getElementById('res-product-price'),
@@ -21,42 +21,78 @@ document.addEventListener('DOMContentLoaded', () => {
         woodFee: document.getElementById('res-wood-fee'),
         totalCost: document.getElementById('total-cost'),
         deposit: document.getElementById('deposit-amount'),
-        remaining: document.getElementById('remaining-amount'),
         itemCheck: document.getElementById('item-check-goods'),
         itemWood: document.getElementById('item-wood-pack')
     };
 
-    // Calculation Logic
-    const calculate = () => {
-        const rate = parseFloat(elements['exchange-rate'].value) || 0;
-        const priceY = parseFloat(elements['product-price'].value) || 0;
-        const cnShipY = parseFloat(elements['cn-shipping'].value) || 0;
-        const weight = parseFloat(elements['weight'].value) || 0;
-        const qty = parseInt(elements['quantity'].value) || 1;
-        const L = parseFloat(elements['dim-l'].value) || 0;
-        const W = parseFloat(elements['dim-w'].value) || 0;
-        const H = parseFloat(elements['dim-h'].value) || 0;
-        const dest = elements['destination'].value;
-        const isCheck = elements['check-goods'].checked;
-        const isWood = elements['wood-pack'].checked;
+    // State
+    const getRate = () => parseFloat(document.getElementById('exchange-rate').value) || 0;
 
-        // 1. Product price in VND (excluding shipping for fee base)
-        const productVND = priceY * rate;
-        const totalGoodsVND = (priceY + cnShipY) * rate;
-        
-        // 2. Service Fee (Based on Product Price only)
+    const addProductRow = () => {
+        const clone = rowTemplate.content.cloneNode(true);
+        productList.appendChild(clone);
+        refreshIcons();
+        attachRowListeners();
+        calculate();
+    };
+
+    const attachRowListeners = () => {
+        const rows = document.querySelectorAll('.product-row');
+        rows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.removeEventListener('input', calculate);
+                input.addEventListener('input', calculate);
+            });
+            const removeBtn = row.querySelector('.remove-btn');
+            removeBtn.removeEventListener('click', () => {});
+            removeBtn.onclick = () => {
+                row.remove();
+                calculate();
+            };
+        });
+    };
+
+    const calculate = () => {
+        const rate = getRate();
+        const cnShipY = parseFloat(document.getElementById('cn-shipping').value) || 0;
+        const weight = parseFloat(document.getElementById('weight').value) || 0;
+        const L = parseFloat(document.getElementById('dim-l').value) || 0;
+        const W = parseFloat(document.getElementById('dim-w').value) || 0;
+        const H = parseFloat(document.getElementById('dim-h').value) || 0;
+        const dest = document.getElementById('destination').value;
+        const isCheck = document.getElementById('check-goods').checked;
+        const isWood = document.getElementById('wood-pack').checked;
+
+        // 1. Calculate Merchandise Total
+        const rows = document.querySelectorAll('.product-row');
+        let totalMerchCNY = 0;
+        let totalQty = 0;
+
+        const products = Array.from(rows).map(row => {
+            const price = parseFloat(row.querySelector('.p-price').value) || 0;
+            const qty = parseInt(row.querySelector('.p-qty').value) || 1;
+            totalMerchCNY += (price * qty);
+            totalQty += qty;
+            return { price, qty, landedCell: row.querySelector('.p-landed-cost') };
+        });
+
+        const totalProductVND = totalMerchCNY * rate;
+        const totalShipCNVND = cnShipY * rate;
+        const totalBaseVND = totalProductVND + totalShipCNVND;
+
+        // 2. Service Fee (Based on Product Price only per OrderPlus rule)
         let serviceRate = 0.03;
-        if (productVND > 100000000) serviceRate = 0.01;
-        else if (productVND > 30000000) serviceRate = 0.02;
-        else if (productVND > 3000000) serviceRate = 0.025;
+        if (totalProductVND > 100000000) serviceRate = 0.01;
+        else if (totalProductVND > 30000000) serviceRate = 0.02;
+        else if (totalProductVND > 3000000) serviceRate = 0.025;
         
-        let serviceFee = productVND * serviceRate;
-        if (productVND > 0 && serviceFee < 5000) serviceFee = 5000;
+        let serviceFee = totalProductVND * serviceRate;
+        if (totalProductVND > 0 && serviceFee < 5000) serviceFee = 5000;
 
         // 3. International Shipping
-        // Calc volumetric weight
         const volWeight = (L * W * H) / 6000;
-        const chargeWeight = Math.max(weight, volWeight, 0.3); // Min 0.3kg
+        const chargeWeight = Math.max(weight, volWeight, rows.length > 0 ? 0.3 : 0);
         
         let shippingUnitRate = 0;
         if (dest === 'hanoi') {
@@ -68,21 +104,17 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (chargeWeight >= 50) shippingUnitRate = 29000;
             else shippingUnitRate = 30000;
         }
-        
         const shippingFee = chargeWeight * shippingUnitRate;
 
-        // 4. Checking Fee (Optional)
-        // 1-2: 5000, 3-10: 3000, 11-100: 2000
+        // 4. Optional Fees
         let checkFee = 0;
         if (isCheck) {
-            if (qty <= 2) checkFee = 5000;
-            else if (qty <= 10) checkFee = 3000;
+            if (totalQty <= 2) checkFee = 5000;
+            else if (totalQty <= 10) checkFee = 3000;
             else checkFee = 2000;
         }
         results.itemCheck.classList.toggle('hidden', !isCheck);
 
-        // 5. Wood Packing Fee (Optional)
-        // 20Y for 1st kg, 1Y for next kg
         let woodFee = 0;
         if (isWood) {
             const woodY = 20 + Math.max(0, (chargeWeight - 1) * 1);
@@ -90,29 +122,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         results.itemWood.classList.toggle('hidden', !isWood);
 
-        // Totals
-        const total = totalGoodsVND + serviceFee + shippingFee + checkFee + woodFee;
-        const deposit = total * 0.7;
-        const remaining = total * 0.3;
+        // 5. Total and Landed Cost Per Product
+        const totalAllFeesVND = serviceFee + shippingFee + checkFee + woodFee + totalShipCNVND;
+        const totalOrderVND = totalProductVND + totalAllFeesVND;
 
-        // Format Currency
+        // Proportional factor for fees relative to product value
+        // Landed Unit Cost = (PriceY * Rate) + (PriceY * Qty / totalMerchCNY * totalAllFeesVND) / Qty
+        // Simplified: Unit Cost = (PriceY * Rate) * (1 + totalAllFeesVND / totalProductVND)
+        const feeMultiplier = totalProductVND > 0 ? (totalAllFeesVND / totalProductVND) : 0;
+
         const fmt = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(num));
 
-        results.productPrice.textContent = fmt(totalGoodsVND);
+        products.forEach(p => {
+            const unitProductVND = p.price * rate;
+            const unitLandedVND = unitProductVND * (1 + feeMultiplier);
+            p.landedCell.textContent = p.price > 0 ? fmt(unitLandedVND) : '0đ';
+        });
+
+        // Update Summary
+        results.productPrice.textContent = fmt(totalProductVND);
         results.serviceFee.textContent = fmt(serviceFee);
         results.intlShipping.textContent = fmt(shippingFee);
         results.checkFee.textContent = fmt(checkFee);
         results.woodFee.textContent = fmt(woodFee);
-        results.totalCost.textContent = fmt(total);
-        results.deposit.textContent = fmt(deposit);
-        results.remaining.textContent = fmt(remaining);
+        results.totalCost.textContent = fmt(totalOrderVND);
+        results.deposit.textContent = fmt(totalOrderVND * 0.7);
     };
 
-    // Attach listeners
-    inputs.forEach(id => {
-        elements[id].addEventListener('input', calculate);
+    // Listeners
+    addProductBtn.addEventListener('click', addProductRow);
+    configInputs.forEach(id => {
+        document.getElementById(id).addEventListener('input', calculate);
     });
 
-    // Initial calculation
-    calculate();
+    // Init
+    addProductRow(); // Add first empty row
 });
