@@ -364,5 +364,65 @@ document.addEventListener('DOMContentLoaded', () => {
     addComboBtn.onclick = () => addCombo();
     configInputs.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { calculate(); saveState(); }); });
 
+    // --- EXCEL HANDLERS ---
+    const importInput = document.getElementById('import-excel-input');
+    const importBtn = document.getElementById('import-excel-btn');
+    const exportBtn = document.getElementById('export-excel-btn');
+
+    if (exportBtn) {
+        exportBtn.onclick = () => {
+            console.log("Exporting...");
+            const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Gợi ý Sàn', 'Bán Ra (đ)', 'Đã Bán', 'Tồn', 'Lợi Nhuận/SP']];
+            document.querySelectorAll('.product-row').forEach((r, i) => {
+                data.push([
+                    i + 1,
+                    r.querySelector('.p-name').value,
+                    r.querySelector('.p-price').value,
+                    r.querySelector('.p-qty').value,
+                    r.querySelector('.p-landed-cost').textContent,
+                    r.querySelector('.p-shopee-price').textContent,
+                    r.querySelector('.p-actual-price').value,
+                    r.querySelector('.p-sold').value,
+                    r.querySelector('.p-stock').textContent,
+                    r.querySelector('.p-real-profit').textContent
+                ]);
+            });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+            XLSX.writeFile(wb, `OrderPlus_Pro_Export_${new Date().getTime()}.xlsx`);
+        };
+    }
+
+    if (importBtn && importInput) {
+        importBtn.onclick = () => importInput.click();
+        importInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    if (json.length > 0) {
+                        productList.innerHTML = '';
+                        json.forEach(row => {
+                            const name = row['TÊN SẢN PHẨM'] || row['Sản phẩm'] || row['Tên sản phẩm'] || '';
+                            const price = parseFloat(row['GIÁ TỆ'] || row['Giá tệ'] || row['Giá tệ/SP'] || 0);
+                            const qty = parseInt(row['SỐ LƯỢNG'] || row['SL'] || row['Số lượng'] || 0);
+                            const sold = parseInt(row['ĐÃ BÁN'] || row['Đã bán'] || 0);
+                            if (name || price > 0) addProductRow({ name, price, qty: qty || 1, sold: sold });
+                        });
+                        calculate(); saveState();
+                        alert(`Nhập thành công ${productList.children.length} sản phẩm!`);
+                    }
+                } catch (err) { alert("Lỗi khi đọc file Excel!"); }
+            };
+            reader.readAsArrayBuffer(file);
+            importInput.value = '';
+        };
+    }
+
     loadState();
 });
