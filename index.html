@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body class="dark-theme">
     <div class="app-container">
@@ -18,9 +19,12 @@
                 <i data-lucide="package" class="icon-logo"></i>
                 <h1>Order<span>Plus</span> Pro</h1>
             </div>
-            <div class="exchange-rate-badge">
-                <i data-lucide="trending-up"></i>
-                <span>Tỷ giá: <input type="number" id="exchange-rate" value="3950"> đ</span>
+            <div class="header-actions">
+                <button id="export-excel-btn" class="btn-icon secondary"><i data-lucide="file-spreadsheet"></i> Xuất Excel</button>
+                <div class="exchange-rate-badge">
+                    <i data-lucide="trending-up"></i>
+                    <span>Tỷ giá: <input type="number" id="exchange-rate" value="3950"> đ</span>
+                </div>
             </div>
         </header>
 

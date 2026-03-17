@@ -152,9 +152,86 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listeners
     addProductBtn.addEventListener('click', addProductRow);
     configInputs.forEach(id => {
-        document.getElementById(id).addEventListener('input', calculate);
+        document.getElementById(id).addEventListener('input', () => {
+            calculate();
+            saveState();
+        });
     });
 
+    // Export to Excel
+    document.getElementById('export-excel-btn').addEventListener('click', () => {
+        const rows = document.querySelectorAll('.product-row');
+        if (rows.length === 0) return alert('Không có dữ liệu để xuất!');
+
+        const data = [
+            ['STT', 'Giá Sản Phẩm (¥)', 'Số Lượng', 'Vốn Về Tay/SP (VNĐ)']
+        ];
+
+        rows.forEach((row, index) => {
+            const price = row.querySelector('.p-price').value;
+            const qty = row.querySelector('.p-qty').value;
+            const landed = row.querySelector('.p-landed-cost').textContent;
+            data.push([index + 1, price, qty, landed]);
+        });
+
+        // Add Summary Info
+        data.push([]);
+        data.push(['TỔNG ĐƠN HÀNG', document.getElementById('total-cost').textContent]);
+        data.push(['TIỀN CỌC (70%)', document.getElementById('deposit-amount').textContent]);
+        data.push(['TỶ GIÁ', document.getElementById('exchange-rate').value]);
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DonHang");
+        
+        const fileName = `DonHang_1688_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    });
+
+    // Persistent Storage
+    const saveState = () => {
+        const state = {
+            config: {},
+            products: []
+        };
+        configInputs.forEach(id => {
+            state.config[id] = document.getElementById(id).value;
+            if (document.getElementById(id).type === 'checkbox') {
+                state.config[id] = document.getElementById(id).checked;
+            }
+        });
+        document.querySelectorAll('.product-row').forEach(row => {
+            state.products.push({
+                price: row.querySelector('.p-price').value,
+                qty: row.querySelector('.p-qty').value
+            });
+        });
+        localStorage.setItem('orderplus_state', JSON.stringify(state));
+    };
+
+    const loadState = () => {
+        const saved = localStorage.getItem('orderplus_state');
+        if (!saved) {
+            addProductRow();
+            return;
+        }
+        const state = JSON.parse(saved);
+        configInputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el.type === 'checkbox') el.checked = state.config[id];
+            else el.value = state.config[id];
+        });
+        state.products.forEach(p => {
+            const clone = rowTemplate.content.cloneNode(true);
+            clone.querySelector('.p-price').value = p.price;
+            clone.querySelector('.p-qty').value = p.qty;
+            productList.appendChild(clone);
+        });
+        refreshIcons();
+        attachRowListeners();
+        calculate();
+    };
+
     // Init
-    addProductRow(); // Add first empty row
+    loadState();
 });

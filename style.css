@@ -64,6 +64,12 @@ header {
 
 .logo h1 span { color: var(--accent-color); }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .exchange-rate-badge {
     background: var(--card-bg);
     padding: 0.5rem 1rem;
@@ -71,6 +77,16 @@ header {
     border: 1px solid var(--border-color);
     font-size: 0.875rem;
     backdrop-filter: var(--glass-effect);
+}
+
+.btn-icon.secondary {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--success-color);
+}
+
+.btn-icon.secondary:hover {
+    background: rgba(16, 185, 129, 0.2);
 }
 
 .exchange-rate-badge input {
