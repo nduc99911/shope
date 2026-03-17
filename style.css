@@ -202,16 +202,52 @@ th {
     font-size: 0.9rem;
 }
 
-.remove-btn {
-    background: transparent;
-    border: none;
-    color: var(--danger-color);
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+.p-shopee-price {
+    font-weight: 800;
+    color: #ee4d2d;
+    font-size: 1rem;
 }
 
-.remove-btn:hover { opacity: 1; }
+.cost-stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.cost-stack .label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* Shopee Section */
+.shopee-config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+}
+
+.shopee-fees-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.fee-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.info-note.small {
+    padding: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+}
 
 .btn-icon {
     background: rgba(245, 158, 11, 0.1);

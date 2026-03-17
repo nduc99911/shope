@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const configInputs = [
         'exchange-rate', 'cn-shipping', 'weight', 'dim-l', 'dim-w', 'dim-h', 
-        'destination', 'check-goods', 'wood-pack'
+        'destination', 'check-goods', 'wood-pack',
+        'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 'shopee-ads-fee', 'shopee-vxtra-fee', 'shopee-tax-fee'
     ];
 
     const results = {
@@ -64,6 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCheck = document.getElementById('check-goods').checked;
         const isWood = document.getElementById('wood-pack').checked;
 
+        // Shopee Configs
+        const targetProfitRate = (parseFloat(document.getElementById('target-profit').value) || 0) / 100;
+        const shopeeFixedRate = (parseFloat(document.getElementById('shopee-fixed-fee').value) || 0) / 100;
+        const shopeePayRate = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
+        const shopeeAdsRate = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
+        const shopeeVxtraRate = (parseFloat(document.getElementById('shopee-vxtra-fee').value) || 0) / 100;
+        const shopeeTaxRate = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
+        
+        // Operational percentages (Fixed per your request)
+        const staffBonusRate = 0.0075; // average 0.5-1%
+        const shopVoucherRate = 0.015; // average 1-2%
+        const packRate = 0.0075; // average 0.5-1%
+        const flatFeesPerOrder = 1620 + 3000; // PiShip + Ha Tang
+
         // 1. Calculate Merchandise Total
         const rows = document.querySelectorAll('.product-row');
         let totalMerchCNY = 0;
@@ -74,14 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const qty = parseInt(row.querySelector('.p-qty').value) || 1;
             totalMerchCNY += (price * qty);
             totalQty += qty;
-            return { price, qty, landedCell: row.querySelector('.p-landed-cost') };
+            return { 
+                price, qty, 
+                landedCell: row.querySelector('.p-landed-cost'),
+                shopeeCell: row.querySelector('.p-shopee-price')
+            };
         });
 
         const totalProductVND = totalMerchCNY * rate;
         const totalShipCNVND = cnShipY * rate;
-        const totalBaseVND = totalProductVND + totalShipCNVND;
 
-        // 2. Service Fee (Based on Product Price only per OrderPlus rule)
+        // 2. Service Fee
         let serviceRate = 0.03;
         if (totalProductVND > 100000000) serviceRate = 0.01;
         else if (totalProductVND > 30000000) serviceRate = 0.02;
@@ -93,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. International Shipping
         const volWeight = (L * W * H) / 6000;
         const chargeWeight = Math.max(weight, volWeight, rows.length > 0 ? 0.3 : 0);
-        
         let shippingUnitRate = 0;
         if (dest === 'hanoi') {
             if (chargeWeight >= 500) shippingUnitRate = 22000;
@@ -125,10 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. Total and Landed Cost Per Product
         const totalAllFeesVND = serviceFee + shippingFee + checkFee + woodFee + totalShipCNVND;
         const totalOrderVND = totalProductVND + totalAllFeesVND;
-
-        // Proportional factor for fees relative to product value
-        // Landed Unit Cost = (PriceY * Rate) + (PriceY * Qty / totalMerchCNY * totalAllFeesVND) / Qty
-        // Simplified: Unit Cost = (PriceY * Rate) * (1 + totalAllFeesVND / totalProductVND)
         const feeMultiplier = totalProductVND > 0 ? (totalAllFeesVND / totalProductVND) : 0;
 
         const fmt = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(num));
@@ -137,6 +150,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const unitProductVND = p.price * rate;
             const unitLandedVND = unitProductVND * (1 + feeMultiplier);
             p.landedCell.textContent = p.price > 0 ? fmt(unitLandedVND) : '0đ';
+
+            // Shopee Price Formula:
+            // Revenue = SellingPrice - (Fixed + Pay + Ads + Vxtra + Tax + Staff + ShopVoucher + Package)% * SellingPrice - FlatFees
+            // Profit = Revenue - LandedCost
+            // ProfitPercentage = Profit / SellingPrice
+            // TargetPrice = LandedCost / (1 - (TotalFeesPercentage + TargetProfitPercentage)) + Margin to cover FlatFees
+            
+            const totalVariableFeesRate = shopeeFixedRate + shopeePayRate + shopeeAdsRate + shopeeVxtraRate + shopeeTaxRate + staffBonusRate + shopVoucherRate + packRate;
+            const divisor = 1 - (totalVariableFeesRate + targetProfitRate);
+            
+            if (divisor > 0 && p.price > 0) {
+                // Approximate flat fees distributed by units
+                const unitFlatFee = flatFeesPerOrder / totalQty;
+                const suggestedPrice = (unitLandedVND + unitFlatFee) / divisor;
+                p.shopeeCell.textContent = fmt(suggestedPrice);
+            } else {
+                p.shopeeCell.textContent = '---';
+            }
         });
 
         // Update Summary
