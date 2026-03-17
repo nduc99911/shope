@@ -280,6 +280,114 @@ th {
     padding: 2px 0 !important;
 }
 
+/* Combo Section */
+.combo-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.combo-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    padding: 1.25rem !important;
+}
+
+.combo-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.combo-name {
+    font-weight: 700;
+    font-size: 1rem;
+    border-bottom: 2px solid var(--accent-color) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.combo-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.combo-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem;
+    border-radius: 6px;
+}
+
+.combo-product-select {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+
+.combo-qty {
+    width: 60px !important;
+    padding: 4px !important;
+}
+
+.remove-item-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.btn-text {
+    background: transparent;
+    border: none;
+    color: var(--accent-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.combo-result {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.combo-result .res-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.combo-result .res-item.main {
+    margin-top: 0.5rem;
+}
+
+.combo-result .res-item.main .val {
+    color: #ee4d2d;
+    font-weight: 800;
+    font-size: 1.25rem;
+}
+
+.text-danger { color: var(--danger-color); }
+
 .shopee-config-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));

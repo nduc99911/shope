@@ -242,9 +242,60 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Combo Builder Section -->
+                <section class="card combo-section">
+                    <div class="card-header">
+                        <i data-lucide="layers"></i>
+                        <h2>Tính giá Combo Shopee</h2>
+                        <button id="add-combo-btn" class="btn-icon"><i data-lucide="plus"></i> Tạo Combo</button>
+                    </div>
+                    <div id="combo-list" class="combo-container">
+                        <!-- Combos will be added here -->
+                    </div>
+                </section>
             </div>
         </main>
     </div>
+
+    <!-- Combo Item Template -->
+    <template id="combo-item-template">
+        <div class="combo-item">
+            <select class="combo-product-select">
+                <option value="">Chọn sản phẩm...</option>
+            </select>
+            <div class="qty-control">
+                <span>x</span>
+                <input type="number" class="combo-qty" value="1" min="1">
+            </div>
+            <button class="remove-item-btn"><i data-lucide="x"></i></button>
+        </div>
+    </template>
+
+    <!-- Combo Card Template -->
+    <template id="combo-card-template">
+        <div class="combo-card card">
+            <div class="combo-card-header">
+                <input type="text" class="combo-name" placeholder="Tên Combo (VD: Bộ 5 cái + Bơm)">
+                <button class="remove-combo-btn text-danger"><i data-lucide="trash-2"></i></button>
+            </div>
+            <div class="combo-items-list">
+                <!-- Items added here -->
+            </div>
+            <button class="add-item-to-combo-btn btn-text"><i data-lucide="plus-circle"></i> Thêm sản phẩm vào combo</button>
+            
+            <div class="combo-result">
+                <div class="res-item">
+                    <span class="label">Tổng vốn về tay:</span>
+                    <span class="val c-total-landed">0đ</span>
+                </div>
+                <div class="res-item main">
+                    <span class="label">Giá bán Combo Shopee:</span>
+                    <span class="val c-shopee-price">0đ</span>
+                </div>
+            </div>
+        </div>
+    </template>
 
     <!-- Row Template Update -->
     <template id="product-row-template">
