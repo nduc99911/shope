@@ -40,62 +40,84 @@
             <div class="main-layout">
                 <!-- Tab Content Area -->
                 <div class="tab-content-wrapper">
+                    <!-- Tab: Products & Inventory -->
                     <div id="tab-products" class="tab-pane active">
-                        <!-- Product List Section -->
-                        <section class="card product-section">
+                        <section class="card product-card">
                             <div class="card-header">
-                                <div class="header-left">
-                                    <i data-lucide="layout-list"></i>
-                                    <h2>Quản lý Sản phẩm & Giá</h2>
+                                <div class="header-left"><i data-lucide="package"></i> <h2>Quản lý Sản phẩm & Kho</h2></div>
+                                <div class="header-right">
+                                    <div class="platform-switch">
+                                        <div class="switch-option active" data-platform="shopee">Shopee</div>
+                                        <div class="switch-option" data-platform="tiktok">TikTok</div>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm" id="save-project-btn"><i data-lucide="save"></i> Lưu Dự Án</button>
+                                    <button class="btn btn-secondary btn-sm" id="load-project-btn"><i data-lucide="folder-open"></i> Dự Án Cũ</button>
                                 </div>
-                                <div class="platform-switch">
-                                    <label class="switch-option active" data-platform="shopee">
-                                        <i data-lucide="shopping-bag"></i> Shopee
-                                    </label>
-                                    <label class="switch-option" data-platform="tiktok">
-                                        <i data-lucide="music-2"></i> TikTok
-                                    </label>
-                                </div>
-                                <button id="add-product-btn" class="btn-icon"><i data-lucide="plus"></i> Thêm SP</button>
                             </div>
                             
                             <div class="product-table-wrapper">
                                 <table id="product-table">
                                     <thead>
                                         <tr>
-                                            <th>Ảnh</th>
-                                            <th>Thông tin SP</th>
-                                            <th>Vốn</th>
-                                            <th>Gợi Ý</th>
-                                            <th>Đối Thủ</th>
-                                            <th>Flash %</th>
-                                            <th>Bạn Bán</th>
-                                            <th>Lời Thật</th>
+                                            <th class="col-img">Ảnh</th>
+                                            <th>Sản phẩm</th>
+                                            <th>Nhập (¥)</th>
+                                            <th>Vốn (đ)</th>
+                                            <th>Gợi ý Sàn</th>
+                                            <th>Bán Ra (đ)</th>
+                                            <th>Đã Bán</th>
+                                            <th>Tồn</th>
+                                            <th>Lợi Nhuận</th>
                                             <th></th>
                                         </tr>
                                     </thead>
-                                    <tbody id="product-list"></tbody>
+                                    <tbody id="product-list">
+                                        <!-- Rows injected here -->
+                                    </tbody>
                                 </table>
                             </div>
-                        </section>
-                    </div>
-
-                    <div id="tab-combos" class="tab-pane">
-                        <section class="card combo-section">
-                            <div class="card-header">
-                                <div class="header-left">
-                                    <i data-lucide="layers"></i>
-                                    <h2>Bộ Combo (Bundles)</h2>
+                            <div class="card-footer">
+                                <button class="btn btn-primary" id="add-product-btn"><i data-lucide="plus-circle"></i> Thêm sản phẩm</button>
+                                <div class="footer-stats" id="inventory-summary">
+                                    <span>Vốn tồn kho: <strong id="total-stock-value">0đ</strong></span>
+                                    <span>Lãi đã thu: <strong id="total-realized-profit">0đ</strong></span>
                                 </div>
-                                <button id="add-combo-btn" class="btn-icon secondary"><i data-lucide="plus-circle"></i> Tạo Combo</button>
                             </div>
-                            <div id="combo-list" class="combo-container"></div>
                         </section>
                     </div>
 
+                    <!-- Tab: Combos -->
+                    <div id="tab-combos" class="tab-pane">
+                        <section class="card combo-card-container">
+                            <div class="card-header">
+                                <div class="header-left"><i data-lucide="layers"></i> <h2>Bộ Combo & Gợi ý</h2></div>
+                                <button class="btn btn-secondary btn-sm" id="suggest-combo-btn"><i data-lucide="sparkles"></i> Gợi ý Combo</button>
+                            </div>
+                            <div id="combo-list" class="combo-grid">
+                                <!-- Combo cards injected here -->
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-primary" id="add-combo-btn"><i data-lucide="plus-circle"></i> Tạo Combo Mới</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Tab: Settings & Financials -->
                     <div id="tab-settings" class="tab-pane">
                         <div class="settings-grid">
-                            <section class="card config-card">
+                            <section class="card extra-costs-card">
+                                <div class="card-header">
+                                    <div class="header-left"><i data-lucide="receipt"></i> <h2>Chi phí phát sinh (Phụ phí)</h2></div>
+                                </div>
+                                <div class="extra-costs-list" id="extra-costs-list">
+                                    <!-- Items added via JS -->
+                                </div>
+                                <div class="card-footer" style="padding: 10px;">
+                                    <button class="btn btn-secondary btn-sm" id="add-extra-cost-btn"><i data-lucide="plus"></i> Thêm chi phí mới</button>
+                                </div>
+                            </section>
+
+                            <section class="card logistics-section">
                                 <div class="card-header">
                                     <div class="header-left"><i data-lucide="truck"></i> <h2>Vận chuyển & Logistics</h2></div>
                                 </div>
@@ -123,7 +145,7 @@
 
                             <section class="card pricing-section">
                                 <div class="card-header">
-                                    <div class="header-left"><i data-lucide="settings-2" id="platform-icon"></i> <h2 id="platform-title">Cấu hình Shopee</h2></div>
+                                    <div class="header-left"><i data-lucide="settings-2" id="platform-icon"></i> <h2 id="platform-title">Cấu hình Sàn</h2></div>
                                     <select id="fee-template-select" class="template-select">
                                         <option value="custom">-- Mẫu Phí --</option>
                                         <option value="shopee-mall">Shopee Mall</option>
@@ -157,33 +179,33 @@
                     <section class="card result-card">
                         <div class="card-header"><h2>Hiệu quả dự kiến</h2></div>
                         <div class="total-profit-box">
-                            <span class="label">LỢI NHUẬN RÒNG</span>
+                            <span class="label">LỢI NHUẬN DỰ KIẾN (TỔNG)</span>
                             <span id="stat-total-profit" class="val highlight">0đ</span>
                         </div>
                         <div class="mini-stats">
-                            <div class="m-stat"><span class="label">Doanh thu</span><span id="stat-total-revenue">0đ</span></div>
+                            <div class="m-stat"><span class="label">Lãi đã thu</span><span id="stat-realized-profit">0đ</span></div>
+                            <div class="m-stat"><span class="label">Vốn tồn kho</span><span id="stat-stock-value">0đ</span></div>
                             <div class="m-stat"><span class="label">Vốn đầu tư</span><span id="stat-total-capital">0đ</span></div>
-                            <div class="m-stat"><span class="label">Cọc (70%)</span><span id="deposit-amount">0đ</span></div>
                             <div class="m-stat"><span class="label">ROI (%)</span><span id="stat-roi">0%</span></div>
                         </div>
                         <div class="divider"></div>
                         <div class="fee-summary">
                             <div class="f-item"><span>Tiền hàng:</span><span id="res-product-price">0đ</span></div>
-                            <div class="f-item"><span>Phí mua:</span><span id="res-service-fee">0đ</span></div>
-                            <div class="f-item"><span>Cước vận:</span><span id="res-intl-shipping">0đ</span></div>
-                            <div id="item-check-goods" class="f-item hidden"><span>Phí kiểm:</span><span id="res-check-fee">0đ</span></div>
-                            <div id="item-wood-pack" class="f-item hidden"><span>Phí gỗ:</span><span id="res-wood-fee">0đ</span></div>
+                            <div class="f-item"><span>Phí dịch vụ:</span><span id="res-service-fee">0đ</span></div>
+                            <div class="f-item"><span>Cước vận quốc tế:</span><span id="res-intl-shipping">0đ</span></div>
+                            <div class="f-item"><span>Chi phí phát sinh:</span><span id="res-extra-total">0đ</span></div>
                         </div>
                     </section>
                     <div class="info-bubble">
                         <i data-lucide="info"></i>
-                        <p>Các con số sẽ cập nhật tức thì khi bạn thay đổi bất kỳ ô nhập liệu nào ở mọi Tab.</p>
+                        <p>Các chỉ số Tồn kho & Đã bán giúp bạn theo dõi sát sao dòng tiền và lợi nhuận thực tế theo thời gian thực.</p>
                     </div>
                 </aside>
             </div>
         </main>
     </div>
 
+    <!-- Templates -->
     <template id="product-row-template">
         <tr class="product-row">
             <td class="col-img" data-label="Ảnh">
@@ -195,16 +217,20 @@
             <td data-label="Sản phẩm">
                 <input type="text" class="p-name" placeholder="Tên sp...">
                 <div class="input-inline">
-                    <input type="number" class="p-price" placeholder="Giá ¥">
+                    <input type="number" class="p-price" placeholder="¥">
                     <input type="number" class="p-qty" value="1" placeholder="SL">
                 </div>
             </td>
             <td data-label="Vốn về tay"><span class="p-landed-cost">0đ</span></td>
-            <td data-label="Giá gợi ý sàn"><span class="p-shopee-price">0đ</span></td>
-            <td data-label="Giá đối thủ"><input type="number" class="p-comp-price" style="width: 70px !important;"></td>
-            <td data-label="Flash Sale"><input type="number" class="p-fs-rate" placeholder="%" style="width: 50px !important;"></td>
-            <td data-label="Giá bạn bán"><input type="number" class="p-actual-price" style="width: 80px !important; border: 1.5px solid var(--primary-color) !important;"></td>
-            <td data-label="Lợi nhuận">
+            <td data-label="Gợi ý Sàn"><span class="p-shopee-price">0đ</span></td>
+            <td data-label="Bán Ra">
+                <input type="number" class="p-actual-price" style="width: 80px !important; border: 1.5px solid var(--primary-color) !important;">
+            </td>
+            <td data-label="Đã Bán">
+                <input type="number" class="p-sold" value="0" style="width: 50px !important;">
+            </td>
+            <td data-label="Tồn"><span class="p-stock">0</span></td>
+            <td data-label="Lợi Nhuận">
                 <div class="cost-stack">
                     <span class="p-real-profit">0đ</span>
                     <div class="profit-visual-container">
@@ -216,23 +242,29 @@
         </tr>
     </template>
 
-    <!-- Combo Card Template -->
+    <template id="extra-cost-template">
+        <div class="extra-cost-item">
+            <input type="text" class="e-name" placeholder="Tên chi phí (VD: Mua băng keo)...">
+            <input type="number" class="e-amount" placeholder="Số tiền (đ)">
+            <button class="remove-extra-btn btn-icon-sm"><i data-lucide="x"></i></button>
+        </div>
+    </template>
+
     <template id="combo-card-template">
         <div class="combo-card card">
             <div class="combo-card-header">
                 <input type="text" class="combo-name" placeholder="Tên Combo...">
-                <button class="remove-combo-btn remove-btn"><i data-lucide="trash"></i></button>
+                <button class="remove-combo-btn btn-icon-sm"><i data-lucide="trash"></i></button>
             </div>
-            <div class="combo-items-list" style="margin-top: 1rem;"></div>
-            <button class="add-item-to-combo-btn btn-text"><i data-lucide="plus"></i> Thêm sản phẩm</button>
+            <div class="combo-items-list"></div>
+            <button class="add-item-to-combo-btn btn-text-sm"><i data-lucide="plus"></i> Thêm sản phẩm</button>
             <div class="combo-result">
                 <div class="res-item"><span>Tổng vốn:</span> <span class="c-total-landed">0đ</span></div>
-                <div class="res-item main"><span>Giá bán sàn:</span> <span class="c-shopee-price">0đ</span></div>
+                <div class="res-item highlight"><span>Giá sàn:</span> <span class="c-shopee-price">0đ</span></div>
             </div>
         </div>
     </template>
 
-    <!-- Combo Item Template -->
     <template id="combo-item-template">
         <div class="combo-item">
             <select class="combo-product-select"></select>

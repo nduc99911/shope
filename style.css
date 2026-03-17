@@ -490,6 +490,67 @@ td {
 
 .p-landed-cost { color: var(--success-color); font-weight: 700; }
 .p-shopee-price { color: var(--primary-color); font-weight: 800; font-size: 1rem; }
+/* Extra Costs Styling */
+.extra-costs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 1rem;
+}
+
+.extra-cost-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 32px;
+    gap: 10px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.extra-cost-item input {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    outline: none;
+}
+
+.extra-cost-item .e-amount {
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: right;
+}
+
+/* Footer Stats */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.footer-stats strong {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+/* Success/Danger Text */
+.success { color: var(--success-color) !important; }
+.danger { color: var(--danger-color) !important; }
+
+.btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; }
+.btn-secondary { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color); color: var(--text-main); }
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
 .p-real-profit { font-weight: 800; font-size: 1rem; }
 .p-real-profit.pos { color: var(--success-color); }
 .p-real-profit.neg { color: var(--danger-color); }
