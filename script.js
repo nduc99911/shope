@@ -87,6 +87,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const products = Array.from(rows).map(row => {
             const price = parseFloat(row.querySelector('.p-price').value) || 0;
             const qty = parseInt(row.querySelector('.p-qty').value) || 1;
+            const imgInput = row.querySelector('.p-img-url');
+            const imgPreview = row.querySelector('.img-preview');
+            
+            // Handle Image Preview
+            if (imgInput.value) {
+                let img = imgPreview.querySelector('img');
+                if (!img) {
+                    img = document.createElement('img');
+                    imgPreview.appendChild(img);
+                }
+                img.src = imgInput.value;
+            } else {
+                const img = imgPreview.querySelector('img');
+                if (img) img.remove();
+            }
+
             totalMerchCNY += (price * qty);
             totalQty += qty;
             return { 
@@ -146,25 +162,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const fmt = (num) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(num));
 
+        let totalExpectedRevenue = 0;
+
         products.forEach(p => {
             const unitProductVND = p.price * rate;
             const unitLandedVND = unitProductVND * (1 + feeMultiplier);
             p.landedCell.textContent = p.price > 0 ? fmt(unitLandedVND) : '0đ';
 
-            // Shopee Price Formula:
-            // Revenue = SellingPrice - (Fixed + Pay + Ads + Vxtra + Tax + Staff + ShopVoucher + Package)% * SellingPrice - FlatFees
-            // Profit = Revenue - LandedCost
-            // ProfitPercentage = Profit / SellingPrice
-            // TargetPrice = LandedCost / (1 - (TotalFeesPercentage + TargetProfitPercentage)) + Margin to cover FlatFees
-            
             const totalVariableFeesRate = shopeeFixedRate + shopeePayRate + shopeeAdsRate + shopeeVxtraRate + shopeeTaxRate + staffBonusRate + shopVoucherRate + packRate;
             const divisor = 1 - (totalVariableFeesRate + targetProfitRate);
             
             if (divisor > 0 && p.price > 0) {
-                // Approximate flat fees distributed by units
                 const unitFlatFee = flatFeesPerOrder / totalQty;
                 const suggestedPrice = (unitLandedVND + unitFlatFee) / divisor;
                 p.shopeeCell.textContent = fmt(suggestedPrice);
+                totalExpectedRevenue += (suggestedPrice * p.qty);
             } else {
                 p.shopeeCell.textContent = '---';
             }
@@ -178,6 +190,15 @@ document.addEventListener('DOMContentLoaded', () => {
         results.woodFee.textContent = fmt(woodFee);
         results.totalCost.textContent = fmt(totalOrderVND);
         results.deposit.textContent = fmt(totalOrderVND * 0.7);
+
+        // Update Analytics
+        const totalProfit = totalExpectedRevenue * targetProfitRate;
+        const roi = totalOrderVND > 0 ? (totalProfit / totalOrderVND * 100) : 0;
+
+        document.getElementById('stat-total-capital').textContent = fmt(totalOrderVND);
+        document.getElementById('stat-total-revenue').textContent = fmt(totalExpectedRevenue);
+        document.getElementById('stat-total-profit').textContent = fmt(totalProfit);
+        document.getElementById('stat-roi').textContent = Math.round(roi) + '%';
     };
 
     // Listeners

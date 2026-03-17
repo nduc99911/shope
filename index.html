@@ -196,6 +196,32 @@
                         <p>Giá bán đề xuất được tính toán để đảm bảo mốc lợi nhuận bạn mong muốn sau khi trừ tất cả chi phí sàn và vận hành.</p>
                     </div>
                 </section>
+
+                <!-- Analytics Dashboard -->
+                <section class="card analytics-section">
+                    <div class="card-header">
+                        <i data-lucide="pie-chart"></i>
+                        <h2>Phân tích Kinh doanh</h2>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="stat-card">
+                            <span class="label">Tổng Vốn Đầu Tư</span>
+                            <span id="stat-total-capital">0đ</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="label">Doanh Thu Dự Kiến</span>
+                            <span id="stat-total-revenue">0đ</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="label">Lợi Nhuận Ròng</span>
+                            <span id="stat-total-profit" class="success">0đ</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="label">ROI (%)</span>
+                            <span id="stat-roi">0%</span>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -203,8 +229,19 @@
     <!-- Row Template Update -->
     <template id="product-row-template">
         <tr class="product-row">
-            <td><input type="number" class="p-price" step="0.01" placeholder="0.00"></td>
-            <td><input type="number" class="p-qty" value="1" min="1"></td>
+            <td class="col-img">
+                <div class="img-preview">
+                    <i data-lucide="image"></i>
+                    <input type="text" class="p-img-url" placeholder="Link ảnh">
+                </div>
+            </td>
+            <td>
+                <input type="text" class="p-name" placeholder="Tên/Ghi chú SP">
+                <div class="input-inline">
+                    <input type="number" class="p-price" step="0.01" placeholder="Giá ¥">
+                    <input type="number" class="p-qty" value="1" min="1" placeholder="SL">
+                </div>
+            </td>
             <td>
                 <div class="cost-stack">
                     <span class="p-landed-cost">0đ</span>
