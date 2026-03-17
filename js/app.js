@@ -191,22 +191,50 @@ document.addEventListener('DOMContentLoaded', () => {
         calculate();
     };
 
-    // --- Event Listeners ---
-    document.getElementById('add-product-btn').onclick = () => addProductRow();
-    document.getElementById('add-combo-btn').onclick = () => addCombo();
-    document.getElementById('add-extra-cost-btn').onclick = () => addExtraCost();
-    
+    // --- Tab Switching ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const target = document.getElementById(btn.dataset.tab);
+            if (target) target.classList.add('active');
+            saveState();
+        };
+    });
+
+    // --- Platform Switching ---
     document.querySelectorAll('.switch-option').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.switch-option').forEach(o => o.classList.remove('active'));
             opt.classList.add('active');
             currentPlatform = opt.dataset.platform;
             const title = document.getElementById('platform-title');
-            if (currentPlatform === 'tiktok') { title.textContent = 'Cấu hình TikTok Shop'; templateSelect.value = 'tiktok-standard'; }
-            else { title.textContent = 'Cấu hình Shopee'; templateSelect.value = 'shopee-fav'; }
+            if (currentPlatform === 'tiktok') { 
+                title.textContent = 'Cấu hình TikTok Shop'; 
+                templateSelect.value = 'tiktok-standard'; 
+            } else { 
+                title.textContent = 'Cấu hình Shopee'; 
+                templateSelect.value = 'shopee-fav'; 
+            }
             templateSelect.dispatchEvent(new Event('change'));
+            calculate();
+            saveState();
         };
     });
+
+    // --- Event Listeners ---
+    document.getElementById('add-product-btn').onclick = () => addProductRow();
+    document.getElementById('add-combo-btn').onclick = () => addCombo();
+    document.getElementById('add-extra-cost-btn').onclick = () => addExtraCost();
+    
+    document.getElementById('suggest-combo-btn').onclick = () => {
+        const rows = document.querySelectorAll('.product-row');
+        if (rows.length === 0) return alert("Cần có ít nhất 1 sản phẩm để gợi ý!");
+        const first = rows[0].querySelector('.p-name').value || "Sản phẩm 1";
+        addCombo({ name: `Combo 2x ${first}`, items: [{ productId: "0", qty: "2" }] });
+        alert("Đã tạo mẫu Combo gợi ý!");
+    };
 
     templateSelect.onchange = () => {
         const templates = {
