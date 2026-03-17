@@ -170,17 +170,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const isCheck = document.getElementById('check-goods').checked;
         const isWood = document.getElementById('wood-pack').checked;
 
-        const tProfit = (parseFloat(document.getElementById('target-profit').value) || 0) / 100;
-        const mktFee = (parseFloat(document.getElementById('shopee-mkt-fee').value) || 0) / 100;
-        const sFixed = (parseFloat(document.getElementById('shopee-fixed-fee').value) || 0) / 100;
-        const sPay = (parseFloat(document.getElementById('shopee-pay-fee').value) || 0) / 100;
-        const sAds = (parseFloat(document.getElementById('shopee-ads-fee').value) || 0) / 100;
-        const sVxtra = (parseFloat(document.getElementById('shopee-vxtra-fee').value) || 0) / 100;
-        const sFxtra = (parseFloat(document.getElementById('shopee-fxtra-fee').value) || 0) / 100;
-        const sTax = (parseFloat(document.getElementById('shopee-tax-fee').value) || 0) / 100;
-        const sPack = (parseFloat(document.getElementById('shopee-pack-rate').value) || 0) / 100;
-        const piShip = parseFloat(document.getElementById('shopee-piship').value) || 0;
-        const infra = parseFloat(document.getElementById('shopee-infra').value) || 0;
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? (parseFloat(el.value) || 0) : 0;
+        };
+
+        const tProfit = getVal('target-profit') / 100;
+        const mktFee = getVal('shopee-mkt-fee') / 100;
+        const sFixed = getVal('shopee-fixed-fee') / 100;
+        const sPay = getVal('shopee-pay-fee') / 100;
+        const sAds = getVal('shopee-ads-fee') / 100; // Legacy or multi-channel
+        const sVxtra = getVal('shopee-vxtra-fee') / 100;
+        const sFxtra = getVal('shopee-fxtra-fee') / 100;
+        const sTax = getVal('shopee-tax-fee') / 100;
+        const sPack = getVal('shopee-pack-rate') / 100;
+        const piShip = getVal('shopee-piship');
+        const infra = getVal('shopee-infra');
         const flatFeesUnit = (piShip + infra);
 
         const rows = document.querySelectorAll('.product-row');
