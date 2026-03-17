@@ -388,6 +388,19 @@ th {
 
 .text-danger { color: var(--danger-color); }
 
+.p-real-profit {
+    font-weight: 700;
+}
+
+.p-real-profit.pos { color: var(--success-color); }
+.p-real-profit.neg { color: var(--danger-color); }
+
+.p-actual-price {
+    border: 1px solid var(--accent-color) !important;
+    background: rgba(245, 158, 11, 0.05) !important;
+    width: 120px !important;
+}
+
 .shopee-config-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
