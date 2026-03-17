@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('input', () => { calculate(); saveState(); });
     });
 
-    // Excel
+    // Excel Export
     document.getElementById('export-excel-btn').onclick = () => {
         const data = [['STT', 'Sản phẩm', 'Giá tệ', 'SL', 'Vốn về tay', 'Giá Shopee']];
         document.querySelectorAll('.product-row').forEach((r, i) => {
@@ -201,6 +201,62 @@ document.addEventListener('DOMContentLoaded', () => {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Order");
         XLSX.writeFile(wb, `OrderPlus_${new Date().getTime()}.xlsx`);
+    };
+
+    // Excel Import
+    const importBtn = document.getElementById('import-excel-btn');
+    const importInput = document.getElementById('import-excel-input');
+
+    importBtn.onclick = () => importInput.click();
+
+    importInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const data = evt.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            if (json.length > 0) {
+                // Clear existing list
+                productList.innerHTML = '';
+                
+                let detectedRate = 0;
+
+                json.forEach(row => {
+                    // Mapping based on your provided format
+                    // TÊN SẢN PHẨM, THUỘC TÍNH, GIÁ TỆ, SỐ LƯỢNG, TỈ GIÁ
+                    const name = row['TÊN SẢN PHẨM'] || '';
+                    const attr = row['THUỘC TÍNH'] || '';
+                    const price = parseFloat(row['GIÁ TỆ']) || 0;
+                    const qty = parseInt(row['SỐ LƯỢNG']) || 0;
+                    const rate = parseFloat(row['TỈ GIÁ']) || 0;
+
+                    if (rate > 0) detectedRate = rate;
+
+                    addProductRow({
+                        name: `${name} (${attr})`.trim(),
+                        price: price,
+                        qty: qty,
+                        img: ''
+                    });
+                });
+
+                if (detectedRate > 0) {
+                    document.getElementById('exchange-rate').value = detectedRate;
+                }
+
+                calculate();
+                saveState();
+                alert(`Đã nhập thành công ${json.length} sản phẩm!`);
+            }
+        };
+        reader.readAsBinaryString(file);
+        importInput.value = ''; // Reset for next time
     };
 
     const saveState = () => {
