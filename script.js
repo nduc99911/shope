@@ -318,33 +318,47 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = (evt) => {
                 try {
-                    const workbook = XLSX.read(evt.target.result, { type: 'binary' });
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0];
                     const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                     
+                    console.log("Parsed JSON:", json);
+
                     if (json.length > 0) {
                         productList.innerHTML = '';
                         json.forEach(row => {
-                            addProductRow({
-                                name: `${row['TÊN SẢN PHẨM'] || ''} (${row['THUỘC TÍNH'] || ''})`.trim(),
-                                price: parseFloat(row['GIÁ TỆ']) || 0,
-                                qty: parseInt(row['SỐ LƯỢNG']) || 0
-                            });
+                            // Map columns - supports both official OrderPlus export and common source formats
+                            const name = row['TÊN SẢN PHẨM'] || row['Sản phẩm'] || row['Tên sản phẩm'] || '';
+                            const attribute = row['THUỘC TÍNH'] || '';
+                            const price = parseFloat(row['GIÁ TỆ'] || row['Giá tệ'] || row['Giá tệ/SP'] || 0);
+                            const qty = parseInt(row['SỐ LƯỢNG'] || row['SL'] || row['Số lượng'] || 0);
+                            
+                            if (name || price > 0) {
+                                addProductRow({
+                                    name: attribute ? `${name} (${attribute})` : name,
+                                    price: price,
+                                    qty: qty || 1
+                                });
+                            }
                         });
-                        if (json[0]?.['TỈ GIÁ']) {
-                            document.getElementById('exchange-rate').value = json[0]['TỈ GIÁ'];
-                        }
+                        
+                        const rate = json[0]?.['TỈ GIÁ'] || json[0]?.['Tỉ giá'] || json[0]?.['Tỉ giá/Tệ'];
+                        if (rate) document.getElementById('exchange-rate').value = rate;
+
                         calculate();
                         saveState();
-                        alert(`Đã nhập thành công ${json.length} sản phẩm!`);
+                        alert(`Đã nhập thành công ${productList.children.length} sản phẩm!`);
+                    } else {
+                        alert("File Excel không có dữ liệu!");
                     }
                 } catch (err) {
-                    console.error("Error reading Excel:", err);
-                    alert("Có lỗi khi đọc file Excel. Vui lòng kiểm tra định dạng.");
+                    console.error("Critical Excel Error:", err);
+                    alert("Lỗi phân tích file. Đảm bảo file đúng định dạng Excel (.xlsx)!");
                 }
             };
-            reader.readAsBinaryString(file);
-            importInput.value = ''; // Reset for next selection
+            reader.readAsArrayBuffer(file);
+            importInput.value = ''; 
         };
     }
 
