@@ -2,6 +2,7 @@ import { calculateEngine } from './calculator.js';
 import { refreshIcons, updateRowUI, updateComboUI, updateSidebarUI } from './ui.js';
 import { exportToExcel, parseExcel } from './excel.js';
 import { syncToSuperDB } from './storage.js';
+import { SUPER_DB_URL, SUPER_DB_KEY } from './credentials.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const productList = document.getElementById('product-list');
@@ -15,8 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'destination', 'check-goods', 'wood-pack',
         'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 
         'shopee-vxtra-fee', 'shopee-fxtra-fee', 'shopee-tax-fee', 'shopee-mkt-fee',
-        'shopee-piship', 'shopee-infra', 'shopee-pack-rate',
-        'superdb-url', 'superdb-key'
+        'shopee-piship', 'shopee-infra', 'shopee-pack-rate'
     ];
 
     const getFullConfigs = () => {
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(id);
             if (el) conf[id.replace(/-/g, '_')] = el.type === 'checkbox' ? el.checked : parseFloat(el.value) || 0;
         });
-        // Remap to match engine expected keys
         return {
             rate: getVal('exchange-rate'),
             cnShipY: getVal('cn-shipping'),
@@ -68,16 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }))
             }))
         };
-
         const result = calculateEngine(state, getFullConfigs());
-
-        // Sync UI
         document.querySelectorAll('.product-row').forEach((row, i) => updateRowUI(row, result.products[i]));
         document.querySelectorAll('.combo-card').forEach((card, i) => updateComboUI(card, result.combos[i]));
         updateSidebarUI(result.summary);
     };
 
-    // --- Row Management ---
     const addProductRow = (data = null) => {
         const rowTemplate = document.getElementById('product-row-template');
         const clone = rowTemplate.content.cloneNode(true);
@@ -94,8 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const current = productList.lastElementChild;
         current.querySelectorAll('input').forEach(i => i.oninput = () => { if (i.classList.contains('p-name')) updateAllComboSelects(); calculate(); saveState(); });
         current.querySelector('.remove-btn').onclick = () => { current.remove(); updateAllComboSelects(); calculate(); saveState(); };
-        updateAllComboSelects();
-        calculate(); refreshIcons();
+        updateAllComboSelects(); calculate(); refreshIcons();
     };
 
     const addExtraCost = (data = null) => {
@@ -112,14 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addCombo = (data = null) => {
         const comboCardTemplate = document.getElementById('combo-card-template');
-        const comboItemTemplate = document.getElementById('combo-item-template');
         const clone = comboCardTemplate.content.cloneNode(true);
         comboList.appendChild(clone);
         const currentCard = comboList.lastElementChild;
-        if (data) {
-            currentCard.querySelector('.combo-name').value = data.name || '';
-            data.items.forEach(item => addComboItem(currentCard, item));
-        } else { addComboItem(currentCard); }
+        if (data) { currentCard.querySelector('.combo-name').value = data.name || ''; data.items.forEach(item => addComboItem(currentCard, item)); }
+        else { addComboItem(currentCard); }
         currentCard.querySelector('.add-item-to-combo-btn').onclick = () => addComboItem(currentCard);
         currentCard.querySelector('.remove-combo-btn').onclick = () => { currentCard.remove(); calculate(); saveState(); };
         currentCard.querySelector('.combo-name').addEventListener('input', saveState);
@@ -152,30 +143,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const updateAllComboSelects = () => document.querySelectorAll('.combo-product-select').forEach(s => populateSelect(s));
 
-    // --- Persistence ---
     const saveState = () => {
         const state = {
-            platform: currentPlatform,
-            config: {},
+            platform: currentPlatform, config: {},
             items: Array.from(document.querySelectorAll('.product-row')).map(r => ({
-                name: r.querySelector('.p-name').value,
-                price: r.querySelector('.p-price').value,
-                qty: r.querySelector('.p-qty').value,
-                img: r.querySelector('.p-img-url').value,
-                actualPrice: r.querySelector('.p-actual-price').value,
-                sold: r.querySelector('.p-sold').value
+                name: r.querySelector('.p-name').value, price: r.querySelector('.p-price').value, qty: r.querySelector('.p-qty').value,
+                img: r.querySelector('.p-img-url').value, actualPrice: r.querySelector('.p-actual-price').value, sold: r.querySelector('.p-sold').value
             })),
             combos: Array.from(document.querySelectorAll('.combo-card')).map(card => ({
                 name: card.querySelector('.combo-name').value,
-                items: Array.from(card.querySelectorAll('.combo-item')).map(i => ({
-                    productId: i.querySelector('.combo-product-select').value,
-                    qty: i.querySelector('.combo-qty').value
-                }))
+                items: Array.from(card.querySelectorAll('.combo-item')).map(i => ({ productId: i.querySelector('.combo-product-select').value, qty: i.querySelector('.combo-qty').value }))
             })),
-            extras: Array.from(document.querySelectorAll('.extra-cost-item')).map(i => ({
-                name: i.querySelector('.e-name').value,
-                amount: i.querySelector('.e-amount').value
-            }))
+            extras: Array.from(document.querySelectorAll('.extra-cost-item')).map(i => ({ name: i.querySelector('.e-name').value, amount: i.querySelector('.e-amount').value }))
         };
         configInputs.forEach(id => { const el = document.getElementById(id); if (el) state.config[id] = el.type === 'checkbox' ? el.checked : el.value; });
         localStorage.setItem('shope_calc_vFinal_Mod', JSON.stringify(state));
@@ -193,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         calculate();
     };
 
-    // --- Tab Switching ---
+    // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.onclick = () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -205,50 +184,41 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    // --- Platform Switching ---
+    // Platforms
     document.querySelectorAll('.switch-option').forEach(opt => {
         opt.onclick = () => {
             document.querySelectorAll('.switch-option').forEach(o => o.classList.remove('active'));
             opt.classList.add('active');
             currentPlatform = opt.dataset.platform;
             const title = document.getElementById('platform-title');
-            if (currentPlatform === 'tiktok') { 
-                title.textContent = 'Cấu hình TikTok Shop'; 
-                templateSelect.value = 'tiktok-standard'; 
-            } else { 
-                title.textContent = 'Cấu hình Shopee'; 
-                templateSelect.value = 'shopee-fav'; 
-            }
+            if (currentPlatform === 'tiktok') { title.textContent = 'Cấu hình TikTok Shop'; templateSelect.value = 'tiktok-standard'; }
+            else { title.textContent = 'Cấu hình Shopee'; templateSelect.value = 'shopee-fav'; }
             templateSelect.dispatchEvent(new Event('change'));
-            calculate();
-            saveState();
+            calculate(); saveState();
         };
     });
 
-    // --- Event Listeners ---
+    // Event Listeners
     document.getElementById('add-product-btn').onclick = () => addProductRow();
     document.getElementById('add-combo-btn').onclick = () => addCombo();
     document.getElementById('add-extra-cost-btn').onclick = () => addExtraCost();
     
     document.getElementById('sync-superdb-btn').onclick = async () => {
-        const url = document.getElementById('superdb-url').value;
-        const key = document.getElementById('superdb-key').value;
         const state = JSON.parse(localStorage.getItem('shope_calc_vFinal_Mod'));
         if (!state) return alert("Không có dữ liệu để đồng bộ!");
-        
         const btn = document.getElementById('sync-superdb-btn');
         btn.innerHTML = '<i data-lucide="loader-2" class="loading"></i> Đang đồng bộ...';
-        const success = await syncToSuperDB(url, key, { name: "Project_" + new Date().getTime(), state });
+        await syncToSuperDB(SUPER_DB_URL, SUPER_DB_KEY, { name: "Project_" + new Date().getTime(), state });
         btn.innerHTML = '<i data-lucide="cloud-lightning"></i> SuperDB Sync';
         refreshIcons();
     };
 
     document.getElementById('suggest-combo-btn').onclick = () => {
         const rows = document.querySelectorAll('.product-row');
-        if (rows.length === 0) return alert("Cần có ít nhất 1 sản phẩm để gợi ý!");
+        if (rows.length === 0) return alert("Cần ít nhất 1 sản phẩm!");
         const first = rows[0].querySelector('.p-name').value || "Sản phẩm 1";
         addCombo({ name: `Combo 2x ${first}`, items: [{ productId: "0", qty: "2" }] });
-        alert("Đã tạo mẫu Combo gợi ý!");
+        alert("Đã gợi ý Combo!");
     };
 
     templateSelect.onchange = () => {
@@ -264,16 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
     configInputs.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', () => { calculate(); saveState(); }); });
 
     document.getElementById('export-excel-btn').onclick = () => {
-        const rows = Array.from(document.querySelectorAll('.product-row')).map(r => ({
-            name: r.querySelector('.p-name').value,
-            price: r.querySelector('.p-price').value,
-            qty: r.querySelector('.p-qty').value,
-            landed: r.querySelector('.p-landed-cost').textContent,
-            shopee: r.querySelector('.p-shopee-price').textContent,
-            actual: r.querySelector('.p-actual-price').value,
-            sold: r.querySelector('.p-sold').value,
-            stock: r.querySelector('.p-stock').textContent,
-            profit: r.querySelector('.p-real-profit').textContent
+        const rows = Array.from(document.querySelectorAll('.product-row')).map((r, i) => ({
+            name: r.querySelector('.p-name').value, price: r.querySelector('.p-price').value, qty: r.querySelector('.p-qty').value,
+            landed: r.querySelector('.p-landed-cost').textContent, shopee: r.querySelector('.p-shopee-price').textContent,
+            actual: r.querySelector('.p-actual-price').value, sold: r.querySelector('.p-sold').value, stock: r.querySelector('.p-stock').textContent, profit: r.querySelector('.p-real-profit').textContent
         }));
         exportToExcel(rows);
     };
@@ -286,8 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
             productList.innerHTML = '';
             json.forEach(row => {
                 const name = row['TÊN SẢN PHẨM'] || row['Sản phẩm'] || row['Tên sản phẩm'] || '';
-                const price = parseFloat(row['GIÁ TỆ'] || row['Giá tệ'] || row['Giá tệ/SP'] || 0);
-                const qty = parseInt(row['SỐ LƯỢNG'] || row['SL'] || row['Số lượng'] || 0);
+                const price = parseFloat(row['GIÁ TỆ'] || row['Giá tệ'] || 0);
+                const qty = parseInt(row['SỐ LƯỢNG'] || row['SL'] || 0);
                 const sold = parseInt(row['ĐÃ BÁN'] || row['Đã bán'] || 0);
                 if (name || price > 0) addProductRow({ name, price, qty: qty || 1, sold });
             });
@@ -299,7 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = prompt("Tên dự án:", "Dự án mới " + new Date().toLocaleDateString());
         if (!name) return;
         const projects = JSON.parse(localStorage.getItem('shope_projects_v2') || '{}');
-        // Simple snapshot
         projects[name] = JSON.parse(localStorage.getItem('shope_calc_vFinal_Mod'));
         localStorage.setItem('shope_projects_v2', JSON.stringify(projects));
         alert("Đã lưu dự án!");
@@ -315,14 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchExchangeRate = async () => {
         const exchangeIcon = document.querySelector('.exchange-rate-badge i');
-        exchangeIcon.classList.add('loading');
+        exchangeIcon?.classList.add('loading');
         try {
             const res = await fetch('https://api.exchangerate-api.com/v4/latest/CNY');
             const data = await res.json();
             if (data.rates?.VND) { document.getElementById('exchange-rate').value = Math.round(data.rates.VND); calculate(); saveState(); }
-        } catch (e) {} finally { exchangeIcon.classList.remove('loading'); }
+        } catch (e) {} finally { exchangeIcon?.classList.remove('loading'); }
     };
 
-    fetchExchangeRate();
-    loadState();
+    fetchExchangeRate(); loadState();
 });
