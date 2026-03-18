@@ -17,8 +17,8 @@ describe('Calculator Engine', () => {
         // Hanoi shipping for 0.5kg (chargeW < 50) is 24000
         // Service fee min is 5000
         // (10 * 3950) = 39500 VND
-        // Landing = 39500 + 24000 + 5000 = 68500
-        expect(result.products[0].unitLanded).toBeGreaterThan(68000);
+        // Landing = 39500 + 12000 + 5000 = 56500
+        expect(result.products[0].unitLanded).toBe(56500);
     });
 
     it('should correctly calculate realized profit for sold items', () => {

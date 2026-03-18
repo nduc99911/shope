@@ -1,7 +1,7 @@
 import { calculateEngine } from './calculator.js';
 import { refreshIcons, updateRowUI, updateComboUI, updateSidebarUI } from './ui.js';
 import { exportToExcel, parseExcel } from './excel.js';
-import { syncToSuperDB } from './storage.js';
+import { syncToSuperDB, fetchFromSuperDB } from './storage.js';
 import { SUPER_DB_URL, SUPER_DB_KEY } from './credentials.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -213,6 +213,44 @@ document.addEventListener('DOMContentLoaded', () => {
         refreshIcons();
     };
 
+    document.getElementById('load-project-btn').onclick = async () => {
+        const btn = document.getElementById('load-project-btn');
+        const originalText = btn.innerHTML;
+        const localProjects = JSON.parse(localStorage.getItem('shope_projects_v2') || '{}');
+        const localNames = Object.keys(localProjects).map(name => `[Máy này] ${name}`);
+        
+        let cloudProjects = [];
+        let allDisplayNames = [...localNames];
+
+        if (SUPER_DB_URL && SUPER_DB_KEY) {
+            btn.innerHTML = '<i data-lucide="loader-2" class="loading"></i> Đang kết nôi...';
+            cloudProjects = await fetchFromSuperDB(SUPER_DB_URL, SUPER_DB_KEY);
+            const cloudNames = cloudProjects.map(p => `[SuperDB] ${p.name} (${new Date(p.updated_at).toLocaleDateString()})`);
+            allDisplayNames = [...localNames, ...cloudNames];
+        }
+
+        btn.innerHTML = originalText;
+        refreshIcons();
+
+        if (allDisplayNames.length === 0) return alert("Chưa có dự án nào!");
+        
+        const selection = prompt("Chọn số thứ tự dự án để tải:\n" + allDisplayNames.map((n, i) => `${i+1}. ${n}`).join("\n"));
+        if (!selection) return;
+        
+        const index = parseInt(selection) - 1;
+        if (index < localNames.length) {
+            const name = Object.keys(localProjects)[index];
+            loadState(localProjects[name]);
+        } else {
+            const cloudIndex = index - localNames.length;
+            const project = cloudProjects[cloudIndex];
+            if (project && project.project_data) {
+                loadState(project.project_data);
+                alert("Đã tải dữ liệu từ SuperDB!");
+            }
+        }
+    };
+
     document.getElementById('suggest-combo-btn').onclick = () => {
         const rows = document.querySelectorAll('.product-row');
         if (rows.length === 0) return alert("Cần ít nhất 1 sản phẩm!");
@@ -266,14 +304,6 @@ document.addEventListener('DOMContentLoaded', () => {
         projects[name] = JSON.parse(localStorage.getItem('shope_calc_vFinal_Mod'));
         localStorage.setItem('shope_projects_v2', JSON.stringify(projects));
         alert("Đã lưu dự án!");
-    };
-
-    document.getElementById('load-project-btn').onclick = () => {
-        const projects = JSON.parse(localStorage.getItem('shope_projects_v2') || '{}');
-        const names = Object.keys(projects);
-        if (names.length === 0) return alert("Chưa có dự án nào!");
-        const chosen = prompt("Chọn dự án:\n" + names.join("\n"));
-        if (chosen && projects[chosen]) loadState(projects[chosen]);
     };
 
     const fetchExchangeRate = async () => {
