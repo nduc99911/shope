@@ -1,0 +1,14 @@
+{
+  "name": "shope-calc-pro",
+  "version": "2.1.0",
+  "description": "Shopee & TikTok Shop Pricing Calculator Pro",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve ./",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  }
+}
