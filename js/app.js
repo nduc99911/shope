@@ -1,6 +1,7 @@
 import { calculateEngine } from './calculator.js';
 import { refreshIcons, updateRowUI, updateComboUI, updateSidebarUI } from './ui.js';
 import { exportToExcel, parseExcel } from './excel.js';
+import { syncToSuperDB } from './storage.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const productList = document.getElementById('product-list');
@@ -14,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'destination', 'check-goods', 'wood-pack',
         'target-profit', 'shopee-fixed-fee', 'shopee-pay-fee', 
         'shopee-vxtra-fee', 'shopee-fxtra-fee', 'shopee-tax-fee', 'shopee-mkt-fee',
-        'shopee-piship', 'shopee-infra', 'shopee-pack-rate'
+        'shopee-piship', 'shopee-infra', 'shopee-pack-rate',
+        'superdb-url', 'superdb-key'
     ];
 
     const getFullConfigs = () => {
@@ -228,6 +230,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-combo-btn').onclick = () => addCombo();
     document.getElementById('add-extra-cost-btn').onclick = () => addExtraCost();
     
+    document.getElementById('sync-superdb-btn').onclick = async () => {
+        const url = document.getElementById('superdb-url').value;
+        const key = document.getElementById('superdb-key').value;
+        const state = JSON.parse(localStorage.getItem('shope_calc_vFinal_Mod'));
+        if (!state) return alert("Không có dữ liệu để đồng bộ!");
+        
+        const btn = document.getElementById('sync-superdb-btn');
+        btn.innerHTML = '<i data-lucide="loader-2" class="loading"></i> Đang đồng bộ...';
+        const success = await syncToSuperDB(url, key, { name: "Project_" + new Date().getTime(), state });
+        btn.innerHTML = '<i data-lucide="cloud-lightning"></i> SuperDB Sync';
+        refreshIcons();
+    };
+
     document.getElementById('suggest-combo-btn').onclick = () => {
         const rows = document.querySelectorAll('.product-row');
         if (rows.length === 0) return alert("Cần có ít nhất 1 sản phẩm để gợi ý!");

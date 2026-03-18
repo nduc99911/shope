@@ -20,6 +20,7 @@
                 <h1>Order<span>Plus</span> Pro</h1>
             </div>
             <div class="header-actions">
+                <button id="sync-superdb-btn" class="btn btn-secondary" title="Đồng bộ đám mây"><i data-lucide="cloud-lightning"></i> SuperDB Sync</button>
                 <input type="file" id="import-excel-input" accept=".xlsx, .xls, .csv" style="display: none;">
                 <button id="import-excel-btn" class="btn btn-secondary"><i data-lucide="file-up"></i> Nhập Excel</button>
                 <button id="export-excel-btn" class="btn btn-secondary"><i data-lucide="file-spreadsheet"></i> Xuất Excel</button>
@@ -169,6 +170,23 @@
                                      <input type="number" id="shopee-staff-rate" value="0.5">
                                      <input type="number" id="shopee-svoucher-rate" value="1">
                                 </div>
+                            </section>
+
+                            <section class="card">
+                                <div class="card-header">
+                                    <div class="header-left"><i data-lucide="database"></i> <h2>Cloud SuperDB Sync</h2></div>
+                                </div>
+                                <div class="config-grid">
+                                    <div class="input-group">
+                                        <label>URL Cloud (Supabase/Rest)</label>
+                                        <input type="text" id="superdb-url" placeholder="https://xyz.supabase.co">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>API Key / Token</label>
+                                        <input type="password" id="superdb-key" placeholder="Dán mã bảo mật tại đây...">
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 10px;">Để trống nếu chỉ sử dụng lưu trữ máy cục bộ (Local Storage).</p>
                             </section>
                         </div>
                     </div>
